@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
@@ -90,7 +91,7 @@ public class GridManager : MonoBehaviour
                 Destroy(t.gameObject);
                 grid[t.row, t.column] = null;
             }
-            
+
             CollapseColumns();
             RefillGrid();
         }
@@ -121,7 +122,7 @@ public class GridManager : MonoBehaviour
 
         for (int c = 0; c < columns; c++)
         {
-            int emptyRow = rows - 1; 
+            int emptyRow = rows - 1;
             for (int r = rows - 1; r >= 0; r--)
             {
                 if (grid[r, c] != null)
@@ -134,7 +135,9 @@ public class GridManager : MonoBehaviour
 
                         tile.row = emptyRow;
                         tile.column = c;
-                        tile.transform.localPosition = new Vector3(c * tileSize, -emptyRow * tileSize, 0);
+
+                        Vector3 endPos = new Vector3(c * tileSize, -emptyRow * tileSize, 0);
+                        tile.transform.DOLocalMove(endPos, 0.6f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
                     }
 
                     emptyRow--;
@@ -155,9 +158,8 @@ public class GridManager : MonoBehaviour
                 if (grid[r, c] == null)
                 {
                     GameObject tileObj = Instantiate(tilePrefab, transform);
-                    tileObj.transform.localPosition = new Vector3(c * tileSize, -r * tileSize, 0);
-
                     Tile tile = tileObj.GetComponent<Tile>();
+
                     tile.row = r;
                     tile.column = c;
                     tile.tileType = TileType.Cube;
@@ -174,6 +176,13 @@ public class GridManager : MonoBehaviour
 
                     tile.UpdateSprite();
                     grid[r, c] = tile;
+
+                    float startY = -r * tileSize + tileSize * 2f;
+                    tileObj.transform.localPosition = new Vector3(c * tileSize, startY, 0);
+
+                    Vector3 endPos = new Vector3(c * tileSize, -r * tileSize, 0);
+
+                    tileObj.transform.DOLocalMove(endPos, 0.6f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
                 }
             }
         }
