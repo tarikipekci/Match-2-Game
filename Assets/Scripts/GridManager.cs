@@ -73,8 +73,10 @@ public class GridManager : MonoBehaviour
 
     public void TryMatch(Tile startTile)
     {
+        Debug.Log("Method called!");
         if (startTile.tileType != TileType.Cube) return;
 
+        Debug.Log("it's cube");
         visited = new bool[levelData.gridSize.y, levelData.gridSize.x];
         List<Tile> connected = new List<Tile>();
 
@@ -82,11 +84,15 @@ public class GridManager : MonoBehaviour
 
         if (connected.Count >= 2)
         {
+            Debug.Log("Found");
             foreach (var t in connected)
             {
                 Destroy(t.gameObject);
                 grid[t.row, t.column] = null;
             }
+            
+            CollapseColumns();
+            RefillGrid();
         }
     }
 
@@ -106,5 +112,70 @@ public class GridManager : MonoBehaviour
         DFS(r - 1, c, color, connected);
         DFS(r, c + 1, color, connected);
         DFS(r, c - 1, color, connected);
+    }
+
+    private void CollapseColumns()
+    {
+        int rows = levelData.gridSize.y;
+        int columns = levelData.gridSize.x;
+
+        for (int c = 0; c < columns; c++)
+        {
+            int emptyRow = rows - 1; 
+            for (int r = rows - 1; r >= 0; r--)
+            {
+                if (grid[r, c] != null)
+                {
+                    if (r != emptyRow)
+                    {
+                        Tile tile = grid[r, c];
+                        grid[emptyRow, c] = tile;
+                        grid[r, c] = null;
+
+                        tile.row = emptyRow;
+                        tile.column = c;
+                        tile.transform.localPosition = new Vector3(c * tileSize, -emptyRow * tileSize, 0);
+                    }
+
+                    emptyRow--;
+                }
+            }
+        }
+    }
+
+    private void RefillGrid()
+    {
+        int rows = levelData.gridSize.y;
+        int columns = levelData.gridSize.x;
+
+        for (int c = 0; c < columns; c++)
+        {
+            for (int r = 0; r < rows; r++)
+            {
+                if (grid[r, c] == null)
+                {
+                    GameObject tileObj = Instantiate(tilePrefab, transform);
+                    tileObj.transform.localPosition = new Vector3(c * tileSize, -r * tileSize, 0);
+
+                    Tile tile = tileObj.GetComponent<Tile>();
+                    tile.row = r;
+                    tile.column = c;
+                    tile.tileType = TileType.Cube;
+
+                    if (levelData.cubeGoals.Length > 0)
+                    {
+                        int randIndex = Random.Range(0, levelData.cubeGoals.Length);
+                        tile.tileColor = levelData.cubeGoals[randIndex].color;
+                    }
+                    else
+                    {
+                        tile.tileColor = TileColor.Red;
+                    }
+
+                    tile.UpdateSprite();
+                    grid[r, c] = tile;
+                }
+            }
+        }
     }
 }
