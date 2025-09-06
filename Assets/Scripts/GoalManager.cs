@@ -1,73 +1,83 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GoalManager : MonoBehaviour
 {
     public LevelData levelData;
+    public Transform goalContainer;
+    public GameObject goalPrefab;
+    public Tile sampleTilePrefab;
 
-    private Dictionary<TileColor, int> collectedCubesPerColor;
-    private int collectedBalloons;
-    private int collectedDucks;
+    private List<GoalUI> activeGoalUIs = new List<GoalUI>();
 
     void Start()
     {
-        collectedCubesPerColor = new Dictionary<TileColor, int>();
-        foreach (var cubeGoal in levelData.cubeGoals)
-            collectedCubesPerColor[cubeGoal.color] = 0;
+        SetupGoals();
+    }
 
-        collectedBalloons = 0;
-        collectedDucks = 0;
-        UpdateUI();
+    private void SetupGoals()
+    {
+        if (goalContainer == null || goalPrefab == null || sampleTilePrefab == null)
+        {
+            Debug.LogError("GoalManager references are missing!");
+            return;
+        }
+
+        CubeGoal[] goalsToUse;
+
+        if (levelData.cubeGoals is { Length: > 0 })
+        {
+            int goalCount = Mathf.Min(2, levelData.cubeGoals.Length);
+            goalsToUse = new CubeGoal[goalCount];
+            for (int i = 0; i < goalCount; i++)
+            {
+                goalsToUse[i] = levelData.cubeGoals[i];
+            }
+        }
+        else
+        {
+            int goalCount = Random.Range(1, 3);
+            goalsToUse = new CubeGoal[goalCount];
+            for (int i = 0; i < goalCount; i++)
+            {
+                int randIndex = Random.Range(0, 5);
+                goalsToUse[i] = new CubeGoal
+                {
+                    color = (TileColor)(randIndex + 1),
+                    targetCount = Random.Range(5, 11)
+                };
+            }
+        }
+
+        foreach (var goal in goalsToUse)
+        {
+            GameObject go = Instantiate(goalPrefab, goalContainer);
+            GoalUI goalUI = go.GetComponent<GoalUI>();
+            if (goalUI != null)
+            {
+                Sprite sprite = sampleTilePrefab.GetSpriteForColor(goal.color);
+                goalUI.Setup(sprite, goal.targetCount);
+                activeGoalUIs.Add(goalUI);
+            }
+            else
+            {
+                Debug.LogError("GoalPrefab missing GoalUI component!");
+            }
+        }
     }
 
     public void CollectTile(Tile tile)
     {
-        switch(tile.tileType)
+        foreach (var ui in activeGoalUIs)
         {
-            case TileType.Cube:
-                var goal = Array.Find(levelData.cubeGoals, g => g.color == tile.tileColor);
-                if (goal != null)
-                {
-                    collectedCubesPerColor[tile.tileColor]++;
-                    if (collectedCubesPerColor[tile.tileColor] > goal.targetCount)
-                        collectedCubesPerColor[tile.tileColor] = goal.targetCount; // do not exceed the limit
-                }
-                break;
-
-            case TileType.Balloon:
-                collectedBalloons++;
-                if (collectedBalloons > levelData.targetBalloonCount)
-                    collectedBalloons = levelData.targetBalloonCount;
-                break;
-
-            case TileType.Duck:
-                collectedDucks++;
-                if (collectedDucks > levelData.targetDuckCount)
-                    collectedDucks = levelData.targetDuckCount;
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException();
+            if (ui.tileImage.sprite == tile.GetSpriteForColor(tile.tileColor) && ui.GetCurrentCount() > 0)
+            {
+                ui.ReduceCount(1);
+                Destroy(tile.gameObject);
+                return;
+            }
         }
 
-        UpdateUI();
-    }
-
-    private void UpdateUI()
-    {
-       // Updating UI
-    }
-
-    public bool IsLevelComplete()
-    {
-        foreach(var cubeGoal in levelData.cubeGoals)
-        {
-            if (collectedCubesPerColor[cubeGoal.color] < cubeGoal.targetCount)
-                return false;
-        }
-
-        return collectedBalloons >= levelData.targetBalloonCount &&
-               collectedDucks >= levelData.targetDuckCount;
+        Destroy(tile.gameObject);
     }
 }

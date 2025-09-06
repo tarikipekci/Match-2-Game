@@ -19,6 +19,12 @@ MonoBehaviour:
     targetCount: 10
   - color: 2
     targetCount: 10
+  - color: 4
+    targetCount: 10
+  - color: 5
+    targetCount: 10
+  - color: 3
+    targetCount: 10
   targetBalloonCount: 0
   targetDuckCount: 0
   startingRows:

@@ -71,15 +71,26 @@ public class Tile : MonoBehaviour
         };
     }
 
+    public Sprite GetSpriteForColor(TileColor color)
+    {
+        return color switch
+        {
+            TileColor.Red => redSprite,
+            TileColor.Blue => blueSprite,
+            TileColor.Green => greenSprite,
+            TileColor.Yellow => yellowSprite,
+            TileColor.Purple => purpleSprite,
+            _ => null
+        };
+    }
+
     public void Collect()
     {
         FindObjectOfType<GoalManager>()?.CollectTile(this);
-        Destroy(gameObject);
     }
-    
+
     private void OnMouseDown()
     {
         FindObjectOfType<GridManager>().TryMatch(this);
-        Debug.Log("testing");
     }
 }

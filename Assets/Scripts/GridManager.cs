@@ -22,12 +22,17 @@ public class GridManager : MonoBehaviour
         int columns = levelData.gridSize.x;
         grid = new Tile[rows, columns];
 
+        float boardWidth = columns * tileSize;
+        float boardHeight = rows * tileSize;
+        float startX = -boardWidth / 2 + tileSize / 2;
+        float startY = boardHeight / 2 - tileSize / 2;
+
         for (int r = 0; r < rows; r++)
         {
             for (int c = 0; c < columns; c++)
             {
                 GameObject tileObj = Instantiate(tilePrefab, transform);
-                tileObj.transform.localPosition = new Vector3(c * tileSize, -r * tileSize, 0);
+                tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
 
                 Tile tile = tileObj.GetComponent<Tile>();
 
@@ -36,11 +41,11 @@ public class GridManager : MonoBehaviour
 
                 if (levelData.startingRows != null && r < levelData.startingRows.Length)
                 {
-                    var row = levelData.startingRows[r];
-                    if (row.tiles != null && c < row.tiles.Length)
+                    var rowData = levelData.startingRows[r];
+                    if (rowData.tiles != null && c < rowData.tiles.Length)
                     {
-                        tile.tileType = row.tiles[c].tileType;
-                        tile.tileColor = row.tiles[c].tileColor;
+                        tile.tileType = rowData.tiles[c].tileType;
+                        tile.tileColor = rowData.tiles[c].tileColor;
                     }
                     else
                     {
@@ -74,10 +79,8 @@ public class GridManager : MonoBehaviour
 
     public void TryMatch(Tile startTile)
     {
-        Debug.Log("Method called!");
         if (startTile.tileType != TileType.Cube) return;
 
-        Debug.Log("it's cube");
         visited = new bool[levelData.gridSize.y, levelData.gridSize.x];
         List<Tile> connected = new List<Tile>();
 
@@ -85,10 +88,11 @@ public class GridManager : MonoBehaviour
 
         if (connected.Count >= 2)
         {
-            Debug.Log("Found");
             foreach (var t in connected)
             {
-                Destroy(t.gameObject);
+                Color tileColor = SelectTileColor.GetColor(t.tileColor);
+                ParticleManager.Instance.SpawnCubeParticles(t.transform.position, tileColor);
+                t.Collect();
                 grid[t.row, t.column] = null;
             }
 
@@ -120,6 +124,11 @@ public class GridManager : MonoBehaviour
         int rows = levelData.gridSize.y;
         int columns = levelData.gridSize.x;
 
+        float boardWidth = columns * tileSize;
+        float boardHeight = rows * tileSize;
+        float startX = -boardWidth / 2 + tileSize / 2;
+        float startY = boardHeight / 2 - tileSize / 2;
+
         for (int c = 0; c < columns; c++)
         {
             int emptyRow = rows - 1;
@@ -136,10 +145,9 @@ public class GridManager : MonoBehaviour
                         tile.row = emptyRow;
                         tile.column = c;
 
-                        Vector3 endPos = new Vector3(c * tileSize, -emptyRow * tileSize, 0);
-                        tile.transform.DOLocalMove(endPos, 0.6f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
+                        Vector3 endPos = new Vector3(startX + c * tileSize, startY - emptyRow * tileSize, 0);
+                        tile.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
                     }
-
                     emptyRow--;
                 }
             }
@@ -150,6 +158,11 @@ public class GridManager : MonoBehaviour
     {
         int rows = levelData.gridSize.y;
         int columns = levelData.gridSize.x;
+
+        float boardWidth = columns * tileSize;
+        float boardHeight = rows * tileSize;
+        float startX = -boardWidth / 2 + tileSize / 2;
+        float startY = boardHeight / 2 - tileSize / 2;
 
         for (int c = 0; c < columns; c++)
         {
@@ -177,12 +190,11 @@ public class GridManager : MonoBehaviour
                     tile.UpdateSprite();
                     grid[r, c] = tile;
 
-                    float startY = -r * tileSize + tileSize * 2f;
-                    tileObj.transform.localPosition = new Vector3(c * tileSize, startY, 0);
+                    float startTileY = startY - r * tileSize + tileSize * boardHeight;
+                    tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
 
-                    Vector3 endPos = new Vector3(c * tileSize, -r * tileSize, 0);
-
-                    tileObj.transform.DOLocalMove(endPos, 0.6f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
+                    Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
+                    tileObj.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
                 }
             }
         }
