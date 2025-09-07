@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum TileType
@@ -82,11 +83,6 @@ public class Tile : MonoBehaviour
             TileColor.Purple => purpleSprite,
             _ => null
         };
-    }
-
-    public void Collect()
-    {
-        FindObjectOfType<GoalManager>()?.CollectTile(this);
     }
 
     private void OnMouseDown()

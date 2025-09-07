@@ -7,6 +7,7 @@ public class GoalManager : MonoBehaviour
     public Transform goalContainer;
     public GameObject goalPrefab;
     public Tile sampleTilePrefab;
+    public TileGoalAnimator tileGoalAnimator;
 
     private List<GoalUI> activeGoalUIs = new List<GoalUI>();
 
@@ -66,18 +67,37 @@ public class GoalManager : MonoBehaviour
         }
     }
 
-    public void CollectTile(Tile tile)
+    public void CollectTiles(List<Tile> tiles)
     {
-        foreach (var ui in activeGoalUIs)
+        for (int i = 0; i < tiles.Count; i++)
         {
-            if (ui.tileImage.sprite == tile.GetSpriteForColor(tile.tileColor) && ui.GetCurrentCount() > 0)
+            Tile tile = tiles[i];
+
+            foreach (var ui in activeGoalUIs)
             {
-                ui.ReduceCount(1);
+                if (ui.tileImage.sprite == tile.GetSpriteForColor(tile.tileColor) && ui.GetCurrentCount() > 0)
+                {
+                    Sprite tileSprite = tile.sr.sprite;
+                    Vector3 tilePos = tile.transform.position;
+
+                    Destroy(tile.gameObject);
+
+                    float delay = i * 0.05f;
+
+                    tileGoalAnimator.AnimateToGoal(
+                        tileSprite,
+                        tilePos,
+                        ui.tileImage.transform,
+                        () =>
+                        {
+                            ui.ReduceCount(1);
+                        },
+                        delay
+                    );
+                    break;
+                }
                 Destroy(tile.gameObject);
-                return;
             }
         }
-
-        Destroy(tile.gameObject);
     }
 }

@@ -92,12 +92,12 @@ public class GridManager : MonoBehaviour
             {
                 Color tileColor = SelectTileColor.GetColor(t.tileColor);
                 ParticleManager.Instance.SpawnCubeParticles(t.transform.position, tileColor);
-                t.Collect();
                 grid[t.row, t.column] = null;
             }
 
             CollapseColumns();
             RefillGrid();
+            FindObjectOfType<GoalManager>()?.CollectTiles(connected);
         }
     }
 
