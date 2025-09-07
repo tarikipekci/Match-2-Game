@@ -48,8 +48,6 @@ public class ParticleManager : MonoBehaviour
         }
 
         mainPS.Emit(1);
-        mainPS.Play();
-
         Destroy(psObj, mainPS.main.startLifetime.constantMax + 0.1f);
     }
 }

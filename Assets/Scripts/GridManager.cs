@@ -7,6 +7,7 @@ public class GridManager : MonoBehaviour
     public LevelData levelData;
     public GameObject tilePrefab;
     public float tileSize = 1f;
+    public MoveManager moveManager;
 
     private Tile[,] grid;
     private bool[,] visited;
@@ -88,6 +89,12 @@ public class GridManager : MonoBehaviour
 
         if (connected.Count >= 2)
         {
+            if (!moveManager.UseMove())
+            {
+                Debug.Log("Game Over!");
+                return;
+            }
+
             foreach (var t in connected)
             {
                 Color tileColor = SelectTileColor.GetColor(t.tileColor);
@@ -194,7 +201,7 @@ public class GridManager : MonoBehaviour
                     tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
 
                     Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-                    tileObj.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
+                    tileObj.transform.DOLocalMove(endPos, 0.8f + Random.Range(0f, 0.05f)).SetEase(Ease.OutBounce);
                 }
             }
         }
