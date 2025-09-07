@@ -7,7 +7,8 @@ public enum TileType
     None,
     Cube,
     Balloon,
-    Duck
+    Duck,
+    Rocket
 }
 
 public enum TileColor
@@ -44,7 +45,8 @@ public class Tile : MonoBehaviour
     [Header("Other Sprites")]
     public Sprite balloonSprite;
     public Sprite duckSprite;
-
+    public Sprite rocketSprite;
+    
     private void Awake()
     {
         if (sr == null)
@@ -68,6 +70,7 @@ public class Tile : MonoBehaviour
             },
             TileType.Balloon => balloonSprite,
             TileType.Duck => duckSprite,
+            TileType.Rocket => rocketSprite,
             _ => throw new ArgumentOutOfRangeException()
         };
     }

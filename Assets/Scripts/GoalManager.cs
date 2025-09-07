@@ -24,45 +24,52 @@ public class GoalManager : MonoBehaviour
             return;
         }
 
-        CubeGoal[] goalsToUse;
+        int uiCount = 0;
 
-        if (levelData.cubeGoals is { Length: > 0 })
+        // --- Cube Goals ---
+        if (levelData.cubeGoals != null && levelData.cubeGoals.Length > 0)
         {
-            int goalCount = Mathf.Min(2, levelData.cubeGoals.Length);
-            goalsToUse = new CubeGoal[goalCount];
-            for (int i = 0; i < goalCount; i++)
+            int cubeGoalCount = Mathf.Min(2, levelData.cubeGoals.Length);
+            for (int i = 0; i < cubeGoalCount; i++)
             {
-                goalsToUse[i] = levelData.cubeGoals[i];
-            }
-        }
-        else
-        {
-            int goalCount = Random.Range(1, 3);
-            goalsToUse = new CubeGoal[goalCount];
-            for (int i = 0; i < goalCount; i++)
-            {
-                int randIndex = Random.Range(0, 5);
-                goalsToUse[i] = new CubeGoal
+                if (uiCount >= 2) break;
+
+                CubeGoal goal = levelData.cubeGoals[i];
+                GameObject go = Instantiate(goalPrefab, goalContainer);
+                GoalUI goalUI = go.GetComponent<GoalUI>();
+                if (goalUI != null)
                 {
-                    color = (TileColor)(randIndex + 1),
-                    targetCount = Random.Range(5, 11)
-                };
+                    Sprite sprite = sampleTilePrefab.GetSpriteForColor(goal.color);
+                    goalUI.Setup(sprite, goal.targetCount);
+                    activeGoalUIs.Add(goalUI);
+                    uiCount++;
+                }
             }
         }
 
-        foreach (var goal in goalsToUse)
+        // --- Balloon Goal ---
+        if (uiCount < 2 && levelData.targetBalloonCount > 0)
         {
             GameObject go = Instantiate(goalPrefab, goalContainer);
             GoalUI goalUI = go.GetComponent<GoalUI>();
             if (goalUI != null)
             {
-                Sprite sprite = sampleTilePrefab.GetSpriteForColor(goal.color);
-                goalUI.Setup(sprite, goal.targetCount);
+                goalUI.Setup(sampleTilePrefab.balloonSprite, levelData.targetBalloonCount);
                 activeGoalUIs.Add(goalUI);
+                uiCount++;
             }
-            else
+        }
+
+        // --- Duck Goal ---
+        if (uiCount < 2 && levelData.targetDuckCount > 0)
+        {
+            GameObject go = Instantiate(goalPrefab, goalContainer);
+            GoalUI goalUI = go.GetComponent<GoalUI>();
+            if (goalUI != null)
             {
-                Debug.LogError("GoalPrefab missing GoalUI component!");
+                goalUI.Setup(sampleTilePrefab.duckSprite, levelData.targetDuckCount);
+                activeGoalUIs.Add(goalUI);
+                uiCount++;
             }
         }
     }
@@ -75,7 +82,22 @@ public class GoalManager : MonoBehaviour
 
             foreach (var ui in activeGoalUIs)
             {
-                if (ui.tileImage.sprite == tile.GetSpriteForColor(tile.tileColor) && ui.GetCurrentCount() > 0)
+                bool isMatching = false;
+
+                switch (tile.tileType)
+                {
+                    case TileType.Cube:
+                        isMatching = ui.tileImage.sprite == tile.GetSpriteForColor(tile.tileColor) && ui.GetCurrentCount() > 0;
+                        break;
+                    case TileType.Balloon:
+                        isMatching = ui.tileImage.sprite == sampleTilePrefab.balloonSprite && ui.GetCurrentCount() > 0;
+                        break;
+                    case TileType.Duck:
+                        isMatching = ui.tileImage.sprite == sampleTilePrefab.duckSprite && ui.GetCurrentCount() > 0;
+                        break;
+                }
+
+                if (isMatching)
                 {
                     Sprite tileSprite = tile.sr.sprite;
                     Vector3 tilePos = tile.transform.position;

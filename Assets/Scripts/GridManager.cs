@@ -85,9 +85,9 @@ public class GridManager : MonoBehaviour
         visited = new bool[levelData.gridSize.y, levelData.gridSize.x];
         List<Tile> connected = new List<Tile>();
 
-        DFS(startTile.row, startTile.column, startTile.tileColor, connected);
+        DFS(startTile.row, startTile.column, startTile.tileColor, connected, out var cubeCount);
 
-        if (connected.Count >= 2)
+        if (cubeCount >= 2)
         {
             if (!moveManager.UseMove())
             {
@@ -108,22 +108,48 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    private void DFS(int r, int c, TileColor color, List<Tile> connected)
+    private void DFS(int r, int c, TileColor color, List<Tile> connected, out int cubeCount, bool ballonFound = false)
     {
+        cubeCount = 0;
+
         if (r < 0 || r >= levelData.gridSize.y || c < 0 || c >= levelData.gridSize.x)
             return;
 
         if (visited[r, c]) return;
+
         Tile tile = grid[r, c];
-        if (tile == null || tile.tileType != TileType.Cube || tile.tileColor != color) return;
+        if (tile == null) return;
+
+        if (tile.tileType == TileType.Cube && tile.tileColor != color) return;
+
+        if (tile.tileType is TileType.Duck or TileType.Rocket) return;
+
+        if (ballonFound) return;
 
         visited[r, c] = true;
-        connected.Add(tile);
 
-        DFS(r + 1, c, color, connected);
-        DFS(r - 1, c, color, connected);
-        DFS(r, c + 1, color, connected);
-        DFS(r, c - 1, color, connected);
+        if (tile.tileType == TileType.Cube)
+        {
+            connected.Add(tile);
+            cubeCount = 1;
+        }
+        else if (tile.tileType == TileType.Balloon)
+        {
+            connected.Add(tile);
+            ballonFound = true;
+        }
+
+        DFS(r + 1, c, color, connected, out var tempCount, ballonFound);
+        cubeCount += tempCount;
+
+        DFS(r - 1, c, color, connected, out tempCount, ballonFound);
+        cubeCount += tempCount;
+
+        DFS(r, c + 1, color, connected, out tempCount, ballonFound);
+        cubeCount += tempCount;
+
+        DFS(r, c - 1, color, connected, out tempCount, ballonFound);
+        cubeCount += tempCount;
     }
 
     private void CollapseColumns()
@@ -136,16 +162,19 @@ public class GridManager : MonoBehaviour
         float startX = -boardWidth / 2 + tileSize / 2;
         float startY = boardHeight / 2 - tileSize / 2;
 
+        List<Tile> ducksToRemove = new List<Tile>();
+        int CurrentTweens = 0;
+
         for (int c = 0; c < columns; c++)
         {
             int emptyRow = rows - 1;
             for (int r = rows - 1; r >= 0; r--)
             {
-                if (grid[r, c] != null)
+                Tile tile = grid[r, c];
+                if (tile != null)
                 {
                     if (r != emptyRow)
                     {
-                        Tile tile = grid[r, c];
                         grid[emptyRow, c] = tile;
                         grid[r, c] = null;
 
@@ -153,11 +182,46 @@ public class GridManager : MonoBehaviour
                         tile.column = c;
 
                         Vector3 endPos = new Vector3(startX + c * tileSize, startY - emptyRow * tileSize, 0);
-                        tile.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
+                        CurrentTweens++;
+                        tile.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce)
+                            .OnComplete(() =>
+                            {
+                                CurrentTweens--;
+                                if (tile.tileType == TileType.Duck && tile.row == rows - 1)
+                                    ducksToRemove.Add(tile);
+
+                                if (CurrentTweens == 0)
+                                {
+                                    foreach (var duck in ducksToRemove)
+                                    {
+                                        Destroy(duck.gameObject);
+                                        grid[duck.row, duck.column] = null;
+                                    }
+
+                                    CollapseColumns();
+                                    RefillGrid();
+                                }
+                            });
                     }
+
                     emptyRow--;
                 }
             }
+        }
+
+        if (CurrentTweens == 0)
+        {
+            for (int c = 0; c < columns; c++)
+            {
+                Tile bottomTile = grid[rows - 1, c];
+                if (bottomTile != null && bottomTile.tileType == TileType.Duck)
+                {
+                    Destroy(bottomTile.gameObject);
+                    grid[rows - 1, c] = null;
+                }
+            }
+
+            RefillGrid();
         }
     }
 
@@ -165,7 +229,6 @@ public class GridManager : MonoBehaviour
     {
         int rows = levelData.gridSize.y;
         int columns = levelData.gridSize.x;
-
         float boardWidth = columns * tileSize;
         float boardHeight = rows * tileSize;
         float startX = -boardWidth / 2 + tileSize / 2;
@@ -182,16 +245,24 @@ public class GridManager : MonoBehaviour
 
                     tile.row = r;
                     tile.column = c;
-                    tile.tileType = TileType.Cube;
 
-                    if (levelData.cubeGoals.Length > 0)
+                    float random = Random.value;
+
+                    float balloonChance = levelData.targetBalloonCount > 0 ? 0.2f : 0.05f;
+                    float duckChance = levelData.targetDuckCount > 0 ? 0.15f : 0.03f;
+
+                    if (random < balloonChance) tile.tileType = TileType.Balloon;
+                    else if (random < balloonChance + duckChance) tile.tileType = TileType.Duck;
+                    else tile.tileType = TileType.Cube;
+
+                    if (tile.tileType == TileType.Cube)
                     {
-                        int randIndex = Random.Range(0, levelData.cubeGoals.Length);
-                        tile.tileColor = levelData.cubeGoals[randIndex].color;
-                    }
-                    else
-                    {
-                        tile.tileColor = TileColor.Red;
+                        if (levelData.cubeGoals.Length > 0)
+                        {
+                            int randIndex = Random.Range(0, levelData.cubeGoals.Length);
+                            tile.tileColor = levelData.cubeGoals[randIndex].color;
+                        }
+                        else tile.tileColor = TileColor.Red;
                     }
 
                     tile.UpdateSprite();
