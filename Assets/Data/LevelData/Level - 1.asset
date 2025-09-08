@@ -17,10 +17,8 @@ MonoBehaviour:
   cubeGoals:
   - color: 1
     targetCount: 10
-  - color: 2
-    targetCount: 10
-  targetBalloonCount: 10
-  targetDuckCount: 0
+  targetBalloonCount: 0
+  targetDuckCount: 5
   startingRows:
   - tiles:
     - tileType: 1

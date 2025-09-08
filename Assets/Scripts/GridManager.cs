@@ -9,6 +9,7 @@ public class GridManager : MonoBehaviour
     public GameObject rocketPrefab;
     public float tileSize = 1f;
     public MoveManager moveManager;
+    public GoalManager goalManager;
     private int activeTilesCount;
 
     private Tile[,] grid;
@@ -162,131 +163,132 @@ public class GridManager : MonoBehaviour
         cubeCount += tempCount;
     }
 
-    private void CollapseColumns()
+  private void CollapseColumns()
+{
+    int rows = levelData.gridSize.y;
+    int columns = levelData.gridSize.x;
+
+    float boardWidth = columns * tileSize;
+    float boardHeight = rows * tileSize;
+    float startX = -boardWidth / 2 + tileSize / 2;
+    float startY = boardHeight / 2 - tileSize / 2;
+
+    List<Tile> ducksToRemove = new List<Tile>();
+    int CurrentTweens = 0;
+
+    for (int c = 0; c < columns; c++)
     {
-        int rows = levelData.gridSize.y;
-        int columns = levelData.gridSize.x;
-
-        float boardWidth = columns * tileSize;
-        float boardHeight = rows * tileSize;
-        float startX = -boardWidth / 2 + tileSize / 2;
-        float startY = boardHeight / 2 - tileSize / 2;
-
-        List<Tile> ducksToRemove = new List<Tile>();
-        int CurrentTweens = 0;
-
-        for (int c = 0; c < columns; c++)
+        int emptyRow = rows - 1;
+        for (int r = rows - 1; r >= 0; r--)
         {
-            int emptyRow = rows - 1;
-            for (int r = rows - 1; r >= 0; r--)
+            Tile tile = grid[r, c];
+            if (tile != null)
             {
-                Tile tile = grid[r, c];
-                if (tile != null)
+                if (r != emptyRow)
                 {
-                    if (r != emptyRow)
-                    {
-                        grid[emptyRow, c] = tile;
-                        grid[r, c] = null;
+                    grid[emptyRow, c] = tile;
+                    grid[r, c] = null;
 
-                        tile.row = emptyRow;
-                        tile.column = c;
-
-                        Vector3 endPos = new Vector3(startX + c * tileSize, startY - emptyRow * tileSize, 0);
-                        CurrentTweens++;
-                        tile.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce)
-                            .OnComplete(() =>
-                            {
-                                CurrentTweens--;
-                                if (tile.tileType == TileType.Duck && tile.row == rows - 1)
-                                    ducksToRemove.Add(tile);
-
-                                if (CurrentTweens == 0)
-                                {
-                                    foreach (var duck in ducksToRemove)
-                                    {
-                                        Destroy(duck.gameObject);
-                                        grid[duck.row, duck.column] = null;
-                                    }
-
-                                    CollapseColumns();
-                                    RefillGrid();
-                                }
-                            });
-                    }
-
-                    emptyRow--;
-                }
-            }
-        }
-
-        if (CurrentTweens == 0)
-        {
-            for (int c = 0; c < columns; c++)
-            {
-                Tile bottomTile = grid[rows - 1, c];
-                if (bottomTile != null && bottomTile.tileType == TileType.Duck)
-                {
-                    Destroy(bottomTile.gameObject);
-                    grid[rows - 1, c] = null;
-                }
-            }
-
-            RefillGrid();
-        }
-    }
-
-    private void RefillGrid()
-    {
-        int rows = levelData.gridSize.y;
-        int columns = levelData.gridSize.x;
-        float boardWidth = columns * tileSize;
-        float boardHeight = rows * tileSize;
-        float startX = -boardWidth / 2 + tileSize / 2;
-        float startY = boardHeight / 2 - tileSize / 2;
-
-        for (int c = 0; c < columns; c++)
-        {
-            for (int r = 0; r < rows; r++)
-            {
-                if (grid[r, c] == null)
-                {
-                    GameObject tileObj = Instantiate(tilePrefab, transform);
-                    Tile tile = tileObj.GetComponent<Tile>();
-
-                    tile.row = r;
+                    tile.row = emptyRow;
                     tile.column = c;
 
-                    float random = Random.value;
+                    Vector3 endPos = new Vector3(startX + c * tileSize, startY - emptyRow * tileSize, 0);
 
-                    float balloonChance = levelData.targetBalloonCount > 0 ? 0.2f : 0.05f;
-                    float duckChance = levelData.targetDuckCount > 0 ? 0.15f : 0.03f;
+                    CurrentTweens++;
 
-                    if (random < balloonChance) tile.tileType = TileType.Balloon;
-                    else if (random < balloonChance + duckChance) tile.tileType = TileType.Duck;
-                    else tile.tileType = TileType.Cube;
-
-                    if (tile.tileType == TileType.Cube)
+                    PlayTileDropAnimation(tile.transform, endPos).OnComplete(() =>
                     {
-                        if (levelData.cubeGoals.Length > 0)
+                        CurrentTweens--;
+                        if (tile.tileType == TileType.Duck && tile.row == rows - 1)
+                            ducksToRemove.Add(tile);
+
+                        if (CurrentTweens == 0)
                         {
-                            int randIndex = Random.Range(0, levelData.cubeGoals.Length);
-                            tile.tileColor = levelData.cubeGoals[randIndex].color;
+                            foreach (var duck in ducksToRemove)
+                            {
+                                goalManager.CollectTile(duck);
+                                grid[duck.row, duck.column] = null;
+                            }
+
+                            CollapseColumns();
+                            RefillGrid();
                         }
-                        else tile.tileColor = TileColor.Red;
-                    }
-
-                    tile.UpdateSprite();
-                    grid[r, c] = tile;
-
-                    float startTileY = startY - r * tileSize + tileSize * boardHeight;
-                    tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
-
-                    Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-                    tileObj.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
+                    });
                 }
+
+                emptyRow--;
             }
         }
     }
+
+    if (CurrentTweens == 0)
+    {
+        for (int c = 0; c < columns; c++)
+        {
+            Tile bottomTile = grid[rows - 1, c];
+            if (bottomTile != null && bottomTile.tileType == TileType.Duck)
+            {
+                Destroy(bottomTile.gameObject);
+                grid[rows - 1, c] = null;
+            }
+        }
+
+        RefillGrid();
+    }
+}
+
+private void RefillGrid()
+{
+    int rows = levelData.gridSize.y;
+    int columns = levelData.gridSize.x;
+    float boardWidth = columns * tileSize;
+    float boardHeight = rows * tileSize;
+    float startX = -boardWidth / 2 + tileSize / 2;
+    float startY = boardHeight / 2 - tileSize / 2;
+
+    for (int c = 0; c < columns; c++)
+    {
+        for (int r = 0; r < rows; r++)
+        {
+            if (grid[r, c] == null)
+            {
+                GameObject tileObj = Instantiate(tilePrefab, transform);
+                Tile tile = tileObj.GetComponent<Tile>();
+
+                tile.row = r;
+                tile.column = c;
+
+                float random = Random.value;
+
+                float balloonChance = levelData.targetBalloonCount > 0 ? 0.2f : 0.05f;
+                float duckChance = levelData.targetDuckCount > 0 ? 0.15f : 0.03f;
+
+                if (random < balloonChance) tile.tileType = TileType.Balloon;
+                else if (random < balloonChance + duckChance) tile.tileType = TileType.Duck;
+                else tile.tileType = TileType.Cube;
+
+                if (tile.tileType == TileType.Cube)
+                {
+                    if (levelData.cubeGoals.Length > 0)
+                    {
+                        int randIndex = Random.Range(0, levelData.cubeGoals.Length);
+                        tile.tileColor = levelData.cubeGoals[randIndex].color;
+                    }
+                    else tile.tileColor = TileColor.Red;
+                }
+
+                tile.UpdateSprite();
+                grid[r, c] = tile;
+
+                float startTileY = startY - r * tileSize + tileSize * boardHeight;
+                tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
+
+                Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
+                PlayTileDropAnimation(tileObj.transform, endPos);
+            }
+        }
+    }
+}
 
     public Tile GetTile(int r, int c)
     {
@@ -323,5 +325,31 @@ public class GridManager : MonoBehaviour
             CollapseColumns();
             RefillGrid();
         }
+    }
+
+    private Sequence PlayTileDropAnimation(Transform tileTransform, Vector3 endPos)
+    {
+        const float bounceHeight = 0.15f;
+        const float moveDownTime = 0.3f;
+        const float bounceUpTime = 0.06f;
+        const float settleTime = 0.15f;
+
+        Sequence seq = DOTween.Sequence();
+
+        // First fall
+        seq.Append(tileTransform.DOLocalMove(endPos, moveDownTime).SetEase(Ease.OutCubic));
+
+        // little bounce
+        seq.Append(tileTransform.DOLocalMove(endPos + Vector3.up * bounceHeight, bounceUpTime).SetEase(Ease.OutQuad));
+
+        // last fall
+        seq.Append(
+            tileTransform.DOLocalMove(endPos, settleTime).SetEase(Ease.InQuad)
+        );
+
+        // Scale updating
+        seq.Join(tileTransform.DOScale(0.95f, settleTime * 0.5f).SetLoops(2, LoopType.Yoyo));
+
+        return seq;
     }
 }

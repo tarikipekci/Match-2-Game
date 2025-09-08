@@ -122,4 +122,11 @@ public class GoalManager : MonoBehaviour
             }
         }
     }
+
+    public void CollectTile(Tile tile)
+    {
+        if (tile == null) return;
+
+        CollectTiles(new List<Tile> { tile });
+    }
 }

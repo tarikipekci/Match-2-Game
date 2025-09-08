@@ -1149,6 +1149,7 @@ MonoBehaviour:
   rocketPrefab: {fileID: 7470661148555225261, guid: aabff91e7f3873a41b1e1a3a02e259c6, type: 3}
   tileSize: 1
   moveManager: {fileID: 1937372384}
+  goalManager: {fileID: 655497834}
 --- !u!4 &1488493806
 Transform:
   m_ObjectHideFlags: 0

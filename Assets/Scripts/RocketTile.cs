@@ -40,7 +40,7 @@ public class RocketTile : Tile, IActivatable
     private void Launch(GridManager board, bool horizontal)
     {
         int row = this.row;
-        int col = this.column;
+        int col = column;
 
         if (horizontal)
         {
@@ -76,8 +76,8 @@ public class RocketTile : Tile, IActivatable
             activatableTile.Activate(board);
         else
         {
+            board.goalManager?.CollectTile(tile);
             board.GetGrid()[tile.row, tile.column] = null;
-            Destroy(tile.gameObject);
         }
     }
 }
