@@ -29,37 +29,58 @@ public class RocketTile : Tile, IActivatable
         if (hasActivated) return;
         hasActivated = true;
 
-        board.TileActivated();
-
         if (direction == RocketDirection.Horizontal)
             Launch(board, true);
         else
             Launch(board, false);
+        
+        board.TileActivated();
     }
 
     private void Launch(GridManager board, bool horizontal)
     {
         int row = this.row;
-        int col = column;
+        int col = this.column;
+
+        const float duration = 0.5f;
+        float totalDist = horizontal
+            ? board.levelData.gridSize.x * board.tileSize
+            : board.levelData.gridSize.y * board.tileSize;
 
         if (horizontal)
         {
             for (int c = 0; c < board.levelData.gridSize.x; c++)
-                HandleTile(board.GetTile(row, c), board);
+            {
+                Tile tile = board.GetTile(row, c);
+                if (tile == null || tile.isItObstacle) continue;
+
+                float dist = Mathf.Abs(c - col) * board.tileSize;
+                float delay = (dist / totalDist) * duration;
+
+                DOVirtual.DelayedCall(delay, () => HandleTile(tile, board));
+            }
         }
         else
         {
             for (int r = 0; r < board.levelData.gridSize.y; r++)
-                HandleTile(board.GetTile(r, col), board);
+            {
+                Tile tile = board.GetTile(r, col);
+                if (tile == null || tile.isItObstacle) continue;
+
+                float dist = Mathf.Abs(r - row) * board.tileSize;
+                float delay = (dist / totalDist) * duration;
+
+                DOVirtual.DelayedCall(delay, () => HandleTile(tile, board));
+            }
         }
 
         Vector3 move1 = horizontal
-            ? -transform.right * board.levelData.gridSize.x * board.tileSize
-            : transform.up * board.levelData.gridSize.y * board.tileSize;
+            ? -transform.right * totalDist
+            : transform.up * totalDist;
         Vector3 move2 = -move1;
 
-        leftPart.DOLocalMove(leftPart.localPosition + move1, 0.5f).SetEase(Ease.Linear);
-        rightPart.DOLocalMove(rightPart.localPosition + move2, 0.5f).SetEase(Ease.Linear)
+        leftPart.DOLocalMove(leftPart.localPosition + move1, duration).SetEase(Ease.Linear);
+        rightPart.DOLocalMove(rightPart.localPosition + move2, duration).SetEase(Ease.Linear)
             .OnComplete(() =>
             {
                 board.GetGrid()[row, col] = null;

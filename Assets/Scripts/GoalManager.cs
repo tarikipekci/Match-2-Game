@@ -6,7 +6,7 @@ public class GoalManager : MonoBehaviour
     public LevelData levelData;
     public Transform goalContainer;
     public GameObject goalPrefab;
-    public Tile sampleTilePrefab;
+    public CubeTile sampleTilePrefab;
     public TileGoalAnimator tileGoalAnimator;
 
     private List<GoalUI> activeGoalUIs = new List<GoalUI>();
@@ -27,7 +27,7 @@ public class GoalManager : MonoBehaviour
         int uiCount = 0;
 
         // --- Cube Goals ---
-        if (levelData.cubeGoals != null && levelData.cubeGoals.Length > 0)
+        if (levelData.cubeGoals is { Length: > 0 })
         {
             int cubeGoalCount = Mathf.Min(2, levelData.cubeGoals.Length);
             for (int i = 0; i < cubeGoalCount; i++)
@@ -39,7 +39,10 @@ public class GoalManager : MonoBehaviour
                 GoalUI goalUI = go.GetComponent<GoalUI>();
                 if (goalUI != null)
                 {
-                    Sprite sprite = sampleTilePrefab.GetSpriteForColor(goal.color);
+                    Sprite sprite = sampleTilePrefab is { } cubeSample 
+                        ? cubeSample.GetSpriteForColor(goal.color) 
+                        : sampleTilePrefab.GetSpriteForColor(goal.color);
+
                     goalUI.Setup(sprite, goal.targetCount);
                     activeGoalUIs.Add(goalUI);
                     uiCount++;
@@ -87,7 +90,8 @@ public class GoalManager : MonoBehaviour
                 switch (tile.tileType)
                 {
                     case TileType.Cube:
-                        isMatching = ui.tileImage.sprite == tile.GetSpriteForColor(tile.tileColor) && ui.GetCurrentCount() > 0;
+                        if (tile is CubeTile cubeTile)
+                            isMatching = ui.tileImage.sprite == cubeTile.GetSpriteForColor(cubeTile.tileColor) && ui.GetCurrentCount() > 0;
                         break;
                     case TileType.Balloon:
                         isMatching = ui.tileImage.sprite == sampleTilePrefab.balloonSprite && ui.GetCurrentCount() > 0;
@@ -110,14 +114,12 @@ public class GoalManager : MonoBehaviour
                         tileSprite,
                         tilePos,
                         ui.tileImage.transform,
-                        () =>
-                        {
-                            ui.ReduceCount(1);
-                        },
+                        () => ui.ReduceCount(1),
                         delay
                     );
                     break;
                 }
+
                 Destroy(tile.gameObject);
             }
         }

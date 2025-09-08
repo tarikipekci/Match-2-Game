@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8642784376a7749b0bbcc28490e37c, type: 3}
   m_Name: Level - 1
   m_EditorClassIdentifier: 
-  moveCount: 100
+  moveCount: 20
   gridSize: {x: 5, y: 5}
   cubeGoals:
   - color: 1
     targetCount: 10
-  targetBalloonCount: 0
-  targetDuckCount: 5
+  targetBalloonCount: 10
+  targetDuckCount: 0
   startingRows:
   - tiles:
     - tileType: 1

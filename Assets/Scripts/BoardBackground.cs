@@ -1,40 +1,40 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Canvas))]
 public class BoardBackground : MonoBehaviour
 {
     public GridManager gridManager;
     public Image backgroundImage;
-    public Canvas canvas;
+    private LevelData levelData;
+    private float tileSize;
+    private float xMultiplier;
+    private float yMultiplier;
 
     void Start()
     {
-        if (canvas == null)
-            canvas = backgroundImage.canvas;
-
+        CalculateTileSize();
         UpdateBackgroundSize();
+    }
+
+    private void CalculateTileSize()
+    {
+        levelData = gridManager.levelData;
+        int rows = levelData.gridSize.y;
+        int columns = levelData.gridSize.x;
+
+        const float boardSizeRatio = 4f;
+
+        tileSize = Mathf.Min(boardSizeRatio / columns, boardSizeRatio / rows);
     }
 
     private void UpdateBackgroundSize()
     {
-        int rows = gridManager.levelData.gridSize.y;
-        int columns = gridManager.levelData.gridSize.x;
+        float xMultiplier = 1f / (levelData.gridSize.x * 0.2f + 0.1f) * 20;
+        float yMultiplier = 1f / (levelData.gridSize.y * 0.2f + 0.1f) * 30;
 
-        float boardWidthWorld = columns * gridManager.tileSize;
-        float boardHeightWorld = rows * gridManager.tileSize;
-
-        float canvasHeight = canvas.pixelRect.height;
-        float canvasWidth = canvas.pixelRect.width;
-
-        float scaleX = canvasWidth / boardWidthWorld;
-        float scaleY = canvasHeight / boardHeightWorld;
-        float scale = Mathf.Min(scaleX, scaleY);
-
-        float width = boardWidthWorld * scale;
-        float height = boardHeightWorld * scale;
-
-        backgroundImage.rectTransform.sizeDelta = new Vector2(width, height);
+        backgroundImage.rectTransform.sizeDelta = new Vector2(levelData.gridSize.x * (tileSize * 100)*2 + xMultiplier,
+            levelData.gridSize.y * (tileSize * 100)*2 + yMultiplier);
+        backgroundImage.rectTransform.localScale = Vector3.one;
         backgroundImage.rectTransform.localPosition = Vector3.zero;
     }
 }

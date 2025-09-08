@@ -246,7 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -608,7 +608,7 @@ MonoBehaviour:
   levelData: {fileID: 11400000, guid: 8bf9c24dec60b0642bc3ab0f768f2ad8, type: 2}
   goalContainer: {fileID: 560516262}
   goalPrefab: {fileID: 6883102192729078180, guid: d222ab5fb81065e4186f9388036ab105, type: 3}
-  sampleTilePrefab: {fileID: -8641159775744764294, guid: 7736f318f96a8cb438450a9c68d18866, type: 3}
+  sampleTilePrefab: {fileID: 5676717680003615864, guid: 7736f318f96a8cb438450a9c68d18866, type: 3}
   tileGoalAnimator: {fileID: 905396643}
 --- !u!4 &655497835
 Transform:
@@ -774,7 +774,6 @@ GameObject:
   - component: {fileID: 1040408093}
   - component: {fileID: 1040408092}
   - component: {fileID: 1040408094}
-  - component: {fileID: 1040408095}
   m_Layer: 5
   m_Name: BoardBackground
   m_TagString: Untagged
@@ -800,7 +799,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 800, y: 800}
+  m_SizeDelta: {x: 810, y: 900}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1040408092
 MonoBehaviour:
@@ -816,7 +815,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -854,28 +853,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1488493805}
   backgroundImage: {fileID: 1040408092}
-  canvas: {fileID: 1728398231}
---- !u!223 &1040408095
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1040408090}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 1
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: -2
-  m_TargetDisplay: 0
 --- !u!1 &1129115364
 GameObject:
   m_ObjectHideFlags: 0
@@ -1145,8 +1122,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelData: {fileID: 11400000, guid: 8bf9c24dec60b0642bc3ab0f768f2ad8, type: 2}
-  tilePrefab: {fileID: 7470661148555225261, guid: 7736f318f96a8cb438450a9c68d18866, type: 3}
-  rocketPrefab: {fileID: 7470661148555225261, guid: aabff91e7f3873a41b1e1a3a02e259c6, type: 3}
+  cubeTilePrefab: {fileID: 7470661148555225261, guid: 7736f318f96a8cb438450a9c68d18866, type: 3}
+  rocketTilePrefab: {fileID: 7470661148555225261, guid: aabff91e7f3873a41b1e1a3a02e259c6, type: 3}
+  passiveTilePrefab: {fileID: 7470661148555225261, guid: 4a56e29b35913ca4fb82f941b524ae1d, type: 3}
   tileSize: 1
   moveManager: {fileID: 1937372384}
   goalManager: {fileID: 655497834}
@@ -1217,7 +1195,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1344,7 +1322,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!223 &1728398231
 Canvas:
   m_ObjectHideFlags: 0
@@ -1354,7 +1332,7 @@ Canvas:
   m_GameObject: {fileID: 1728398228}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 1
+  m_RenderMode: 2
   m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
@@ -1374,8 +1352,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1728398228}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 90}
+  m_LocalScale: {x: 0.0052083335, y: 0.0052083335, z: 0.0052083335}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1523102548}
@@ -1386,8 +1364,8 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
+  m_SizeDelta: {x: 1080, y: 1920}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1937372383
 GameObject:
   m_ObjectHideFlags: 0
