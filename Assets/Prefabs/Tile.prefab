@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3290098755227846462}
-  - component: {fileID: 5951510113746616148}
+  - component: {fileID: -8641159775744764294}
   - component: {fileID: 1475689745205798855}
   - component: {fileID: 2260679172509430907}
   m_Layer: 0
@@ -34,7 +34,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5951510113746616148
+--- !u!114 &-8641159775744764294
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,6 +58,7 @@ MonoBehaviour:
   purpleSprite: {fileID: 21300000, guid: 3368808b3e699e345a2903224804928f, type: 3}
   balloonSprite: {fileID: 21300000, guid: 0ea19bfe22585664590a8b8991f1da34, type: 3}
   duckSprite: {fileID: 21300000, guid: 82f27516110d324449c41cdc2f731048, type: 3}
+  rocketSprite: {fileID: 21300000, guid: 57669760d211e5842bcf5f75f4881b0d, type: 3}
 --- !u!212 &1475689745205798855
 SpriteRenderer:
   m_ObjectHideFlags: 0

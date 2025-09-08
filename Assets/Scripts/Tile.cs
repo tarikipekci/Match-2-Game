@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum TileType
@@ -24,29 +23,27 @@ public enum TileColor
 [RequireComponent(typeof(SpriteRenderer))]
 public class Tile : MonoBehaviour
 {
-    [Header("Position on board")]
-    [HideInInspector] public int row;
+    [Header("Position on board")] [HideInInspector]
+    public int row;
+
     [HideInInspector] public int column;
-    
-    [Header("Tile Settings")]
-    public TileType tileType;
+
+    [Header("Tile Settings")] public TileType tileType;
     public TileColor tileColor; // for only cubes
+    public bool isItObstacle;
 
-    [Header("References")]
-    public SpriteRenderer sr;
+    [Header("References")] public SpriteRenderer sr;
 
-    [Header("Cube Sprites")]
-    public Sprite redSprite;
+    [Header("Cube Sprites")] public Sprite redSprite;
     public Sprite blueSprite;
     public Sprite greenSprite;
     public Sprite yellowSprite;
     public Sprite purpleSprite;
 
-    [Header("Other Sprites")]
-    public Sprite balloonSprite;
+    [Header("Other Sprites")] public Sprite balloonSprite;
     public Sprite duckSprite;
     public Sprite rocketSprite;
-    
+
     private void Awake()
     {
         if (sr == null)
@@ -71,6 +68,7 @@ public class Tile : MonoBehaviour
             TileType.Balloon => balloonSprite,
             TileType.Duck => duckSprite,
             TileType.Rocket => rocketSprite,
+            TileType.None => null,
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -79,6 +77,7 @@ public class Tile : MonoBehaviour
     {
         return color switch
         {
+            TileColor.None => null,
             TileColor.Red => redSprite,
             TileColor.Blue => blueSprite,
             TileColor.Green => greenSprite,
@@ -90,6 +89,15 @@ public class Tile : MonoBehaviour
 
     private void OnMouseDown()
     {
-        FindObjectOfType<GridManager>().TryMatch(this);
+        GridManager grid = FindObjectOfType<GridManager>();
+
+        if (this is IActivatable activatable)
+        {
+            activatable.Activate(grid);
+        }
+        else
+        {
+            grid.TryMatch(this);
+        }
     }
 }

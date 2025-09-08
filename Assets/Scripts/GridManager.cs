@@ -6,8 +6,10 @@ public class GridManager : MonoBehaviour
 {
     public LevelData levelData;
     public GameObject tilePrefab;
+    public GameObject rocketPrefab;
     public float tileSize = 1f;
     public MoveManager moveManager;
+    private int activeTilesCount;
 
     private Tile[,] grid;
     private bool[,] visited;
@@ -81,6 +83,7 @@ public class GridManager : MonoBehaviour
     public void TryMatch(Tile startTile)
     {
         if (startTile.tileType != TileType.Cube) return;
+        Vector3 startPos = startTile.transform.localPosition;
 
         visited = new bool[levelData.gridSize.y, levelData.gridSize.x];
         List<Tile> connected = new List<Tile>();
@@ -102,6 +105,11 @@ public class GridManager : MonoBehaviour
                 grid[t.row, t.column] = null;
             }
 
+            if (cubeCount >= 5)
+            {
+                SpawnRocket(startTile.row, startTile.column, startPos);
+            }
+
             CollapseColumns();
             RefillGrid();
             FindObjectOfType<GoalManager>()?.CollectTiles(connected);
@@ -119,6 +127,8 @@ public class GridManager : MonoBehaviour
 
         Tile tile = grid[r, c];
         if (tile == null) return;
+
+        if (tile.isItObstacle) return;
 
         if (tile.tileType == TileType.Cube && tile.tileColor != color) return;
 
@@ -272,9 +282,46 @@ public class GridManager : MonoBehaviour
                     tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
 
                     Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-                    tileObj.transform.DOLocalMove(endPos, 0.8f + Random.Range(0f, 0.05f)).SetEase(Ease.OutBounce);
+                    tileObj.transform.DOLocalMove(endPos, 1f + Random.Range(0f, 0.1f)).SetEase(Ease.OutBounce);
                 }
             }
+        }
+    }
+
+    public Tile GetTile(int r, int c)
+    {
+        return grid[r, c];
+    }
+
+    public Tile[,] GetGrid()
+    {
+        return grid;
+    }
+
+    private void SpawnRocket(int row, int column, Vector3 spawnPos)
+    {
+        GameObject rocketObj = Instantiate(rocketPrefab, transform);
+        RocketTile rocket = rocketObj.GetComponent<RocketTile>();
+        rocket.Initialize();
+
+        rocketObj.transform.localPosition = spawnPos;
+        grid[row, column] = rocket.GetComponent<Tile>();
+        rocket.GetComponent<Tile>().row = row;
+        rocket.GetComponent<Tile>().column = column;
+    }
+
+    public void TileActivated()
+    {
+        activeTilesCount++;
+    }
+
+    public void TileFinished()
+    {
+        activeTilesCount--;
+        if (activeTilesCount <= 0)
+        {
+            CollapseColumns();
+            RefillGrid();
         }
     }
 }
