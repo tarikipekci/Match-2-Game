@@ -16,7 +16,7 @@ MonoBehaviour:
   gridSize: {x: 7, y: 7}
   cubeGoals:
   - color: 1
-    targetCount: 100
+    targetCount: 20
   - color: 2
     targetCount: 20
   - color: 3

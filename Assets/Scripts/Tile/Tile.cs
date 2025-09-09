@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Interfaces;
+using Managers;
+using TileBehaviors;
 using UnityEngine;
 
 public enum TileType
