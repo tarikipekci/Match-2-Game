@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ParticleManager : MonoBehaviour
 {
-    public static ParticleManager Instance;
+    private static ParticleManager Instance;
 
     [Header("Particle Prefab")] public GameObject cubeParticlePrefab;
 
@@ -14,7 +15,29 @@ public class ParticleManager : MonoBehaviour
             Destroy(gameObject);
     }
 
-    public void SpawnCubeParticles(Vector3 position, Color cubeColor)
+    private void OnEnable()
+    {
+        Tile.OnTilesMatched += SpawnParticlesForMatchedTiles;
+    }
+
+    private void OnDisable()
+    {
+        Tile.OnTilesMatched -= SpawnParticlesForMatchedTiles;
+    }
+
+    private void SpawnParticlesForMatchedTiles(List<Tile> tiles)
+    {
+        foreach (var tile in tiles)
+        {
+            if (tile is CubeTile cubeTile)
+            {
+                Color color = SelectTileColor.GetColor(cubeTile.tileColor);
+                Instance.SpawnCubeParticles(cubeTile.transform.position, color);
+            }
+        }
+    }
+
+    private void SpawnCubeParticles(Vector3 position, Color cubeColor)
     {
         if (cubeParticlePrefab == null) return;
 
@@ -43,7 +66,7 @@ public class ParticleManager : MonoBehaviour
         var renderer = psObj.GetComponentInChildren<ParticleSystemRenderer>();
         if (renderer != null)
         {
-            renderer.sortingLayerName = "Default"; 
+            renderer.sortingLayerName = "Default";
             renderer.sortingOrder = 100;
         }
 

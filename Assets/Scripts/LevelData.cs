@@ -20,6 +20,25 @@ public class CubeGoal
     public int targetCount;
 }
 
+[System.Serializable]
+public class CubePool
+{
+    public TileColor[] tileColors;
+}
+
+[System.Serializable]
+public class PassivePool
+{
+    public TileType[] tileType;
+}
+
+[System.Serializable]
+public class PoolData
+{
+    [Header("For Cubes")] public CubePool cubePool;
+    [Header("For Passives")] public PassivePool passivePool;
+}
+
 [CreateAssetMenu(fileName = "LevelData", menuName = "Match2/LevelData")]
 public class LevelData : ScriptableObject
 {
@@ -29,6 +48,7 @@ public class LevelData : ScriptableObject
     public int targetBalloonCount;
     public int targetDuckCount;
 
-    [Header("Initial State")] 
-    public TileRow[] startingRows; 
+    [Header("Initial State")] public TileRow[] startingRows;
+
+    [Header("Spawn Pool")] public PoolData spawnPool;
 }

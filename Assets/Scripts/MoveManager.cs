@@ -3,13 +3,12 @@ using TMPro;
 
 public class MoveManager : MonoBehaviour
 {
-    public LevelData levelData; 
     private int remainingMoves;
     public TMP_Text movesText;
 
     void Start()
     {
-        remainingMoves = levelData.moveCount;
+        remainingMoves = GameManager.Instance.currentLevelData.moveCount;
         UpdateUI();
     }
 

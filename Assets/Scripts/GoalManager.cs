@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class GoalManager : MonoBehaviour
 {
-    public LevelData levelData;
+    private LevelData levelData;
     public Transform goalContainer;
     public GameObject goalPrefab;
     public CubeTile sampleTilePrefab;
@@ -13,7 +13,18 @@ public class GoalManager : MonoBehaviour
 
     void Start()
     {
+        levelData = GameManager.Instance.currentLevelData;
         SetupGoals();
+    }
+
+    private void OnEnable()
+    {
+        Tile.OnTilesMatched += CollectTiles;
+    }
+
+    private void OnDisable()
+    {
+        Tile.OnTilesMatched -= CollectTiles;
     }
 
     private void SetupGoals()
@@ -39,8 +50,8 @@ public class GoalManager : MonoBehaviour
                 GoalUI goalUI = go.GetComponent<GoalUI>();
                 if (goalUI != null)
                 {
-                    Sprite sprite = sampleTilePrefab is { } cubeSample 
-                        ? cubeSample.GetSpriteForColor(goal.color) 
+                    Sprite sprite = sampleTilePrefab is { } cubeSample
+                        ? cubeSample.GetSpriteForColor(goal.color)
                         : sampleTilePrefab.GetSpriteForColor(goal.color);
 
                     goalUI.Setup(sprite, goal.targetCount);
@@ -77,7 +88,7 @@ public class GoalManager : MonoBehaviour
         }
     }
 
-    public void CollectTiles(List<Tile> tiles)
+    private void CollectTiles(List<Tile> tiles)
     {
         for (int i = 0; i < tiles.Count; i++)
         {
@@ -91,7 +102,8 @@ public class GoalManager : MonoBehaviour
                 {
                     case TileType.Cube:
                         if (tile is CubeTile cubeTile)
-                            isMatching = ui.tileImage.sprite == cubeTile.GetSpriteForColor(cubeTile.tileColor) && ui.GetCurrentCount() > 0;
+                            isMatching = ui.tileImage.sprite == cubeTile.GetSpriteForColor(cubeTile.tileColor) &&
+                                         ui.GetCurrentCount() > 0;
                         break;
                     case TileType.Balloon:
                         isMatching = ui.tileImage.sprite == sampleTilePrefab.balloonSprite && ui.GetCurrentCount() > 0;
@@ -103,16 +115,13 @@ public class GoalManager : MonoBehaviour
 
                 if (isMatching)
                 {
-                    Sprite tileSprite = tile.sr.sprite;
-                    Vector3 tilePos = tile.transform.position;
-
                     Destroy(tile.gameObject);
 
                     float delay = i * 0.05f;
 
                     tileGoalAnimator.AnimateToGoal(
-                        tileSprite,
-                        tilePos,
+                        tile.sr.sprite,
+                        tile,
                         ui.tileImage.transform,
                         () => ui.ReduceCount(1),
                         delay

@@ -40,16 +40,16 @@ public class RocketTile : Tile, IActivatable
     private void Launch(GridManager board, bool horizontal)
     {
         int row = this.row;
-        int col = this.column;
+        int col = column;
 
         const float duration = 0.5f;
         float totalDist = horizontal
-            ? board.levelData.gridSize.x * board.tileSize
-            : board.levelData.gridSize.y * board.tileSize;
+            ? GameManager.Instance.currentLevelData.gridSize.x * board.tileSize
+            : GameManager.Instance.currentLevelData.gridSize.y * board.tileSize;
 
         if (horizontal)
         {
-            for (int c = 0; c < board.levelData.gridSize.x; c++)
+            for (int c = 0; c < GameManager.Instance.currentLevelData.gridSize.x; c++)
             {
                 Tile tile = board.GetTile(row, c);
                 if (tile == null || tile.isItObstacle) continue;
@@ -62,7 +62,7 @@ public class RocketTile : Tile, IActivatable
         }
         else
         {
-            for (int r = 0; r < board.levelData.gridSize.y; r++)
+            for (int r = 0; r < GameManager.Instance.currentLevelData.gridSize.y; r++)
             {
                 Tile tile = board.GetTile(r, col);
                 if (tile == null || tile.isItObstacle) continue;

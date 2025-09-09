@@ -13,11 +13,15 @@ MonoBehaviour:
   m_Name: Level - 1
   m_EditorClassIdentifier: 
   moveCount: 20
-  gridSize: {x: 5, y: 5}
+  gridSize: {x: 7, y: 7}
   cubeGoals:
   - color: 1
-    targetCount: 10
-  targetBalloonCount: 10
+    targetCount: 100
+  - color: 2
+    targetCount: 20
+  - color: 3
+    targetCount: 20
+  targetBalloonCount: 0
   targetDuckCount: 0
   startingRows:
   - tiles:
@@ -30,7 +34,11 @@ MonoBehaviour:
     - tileType: 1
       tileColor: 3
     - tileType: 1
-      tileColor: 5
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
   - tiles:
     - tileType: 1
       tileColor: 1
@@ -39,39 +47,90 @@ MonoBehaviour:
     - tileType: 1
       tileColor: 3
     - tileType: 1
-      tileColor: 4
-    - tileType: 1
-      tileColor: 5
-  - tiles:
-    - tileType: 1
-      tileColor: 4
-    - tileType: 1
-      tileColor: 5
-    - tileType: 1
-      tileColor: 2
-    - tileType: 1
-      tileColor: 3
-    - tileType: 1
-      tileColor: 3
-  - tiles:
-    - tileType: 1
-      tileColor: 2
-    - tileType: 1
-      tileColor: 2
-    - tileType: 1
-      tileColor: 2
-    - tileType: 1
-      tileColor: 4
-    - tileType: 1
-      tileColor: 3
-  - tiles:
-    - tileType: 1
       tileColor: 1
-    - tileType: 1
-      tileColor: 5
     - tileType: 1
       tileColor: 1
     - tileType: 1
       tileColor: 2
     - tileType: 1
       tileColor: 3
+  - tiles:
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 3
+  - tiles:
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 1
+  - tiles:
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 1
+  - tiles:
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 1
+  - tiles:
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 1
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 2
+    - tileType: 1
+      tileColor: 3
+    - tileType: 1
+      tileColor: 3
+  spawnPool:
+    cubePool:
+      tileColors: 010000000200000003000000
+    passivePool:
+      tileType: 0200000003000000

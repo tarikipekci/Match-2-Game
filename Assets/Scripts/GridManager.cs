@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.Serialization;
+using static Tile;
 
 public class GridManager : MonoBehaviour
 {
-    public LevelData levelData;
-    [FormerlySerializedAs("tilePrefab")] public GameObject cubeTilePrefab;
-    [FormerlySerializedAs("rocketPrefab")] public GameObject rocketTilePrefab;
+    private LevelData levelData;
+    public GameObject cubeTilePrefab;
+    public GameObject rocketTilePrefab;
     public GameObject passiveTilePrefab;
     public float tileSize = 1f;
     public MoveManager moveManager;
@@ -19,6 +19,7 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
+        levelData = GameManager.Instance.currentLevelData;
         GenerateGrid();
     }
 
@@ -111,32 +112,39 @@ public class GridManager : MonoBehaviour
 
     private Tile SpawnRandomTile(int r, int c, float startX, float startY)
     {
-        GameObject tileObj = Instantiate(cubeTilePrefab, transform);
-        tileObj.transform.localScale = Vector3.one * tileSize;
-
         Tile tile;
         float random = Random.value;
-        float balloonChance = levelData.targetBalloonCount > 0 ? 0.2f : 0.05f;
-        float duckChance = levelData.targetDuckCount > 0 ? 0.15f : 0.03f;
 
-        if (random < balloonChance)
+        List<TileType> passiveTypes = new List<TileType>(levelData.spawnPool.passivePool.tileType);
+        float balloonChance = passiveTypes.Contains(TileType.Balloon) ? 0.2f : 0f;
+        float duckChance = passiveTypes.Contains(TileType.Duck) ? 0.15f : 0f;
+
+        if (random < balloonChance && passiveTypes.Contains(TileType.Balloon))
         {
-            tile = tileObj.GetComponent<Tile>();
+            GameObject obj = Instantiate(passiveTilePrefab, transform);
+            obj.transform.localScale = Vector3.one * tileSize;
+            tile = obj.GetComponent<Tile>();
             tile.tileType = TileType.Balloon;
         }
-        else if (random < balloonChance + duckChance)
+        else if (random < balloonChance + duckChance && passiveTypes.Contains(TileType.Duck))
         {
-            tile = tileObj.GetComponent<Tile>();
+            GameObject obj = Instantiate(passiveTilePrefab, transform);
+            obj.transform.localScale = Vector3.one * tileSize;
+            tile = obj.GetComponent<Tile>();
             tile.tileType = TileType.Duck;
         }
         else
         {
-            CubeTile cube = tileObj.GetComponent<CubeTile>();
+            GameObject obj = Instantiate(cubeTilePrefab, transform);
+            obj.transform.localScale = Vector3.one * tileSize;
+            CubeTile cube = obj.GetComponent<CubeTile>();
             cube.tileType = TileType.Cube;
-            if (levelData.cubeGoals.Length > 0)
+
+            TileColor[] cubeColors = levelData.spawnPool.cubePool.tileColors;
+            if (cubeColors.Length > 0)
             {
-                int randIndex = Random.Range(0, levelData.cubeGoals.Length);
-                cube.tileColor = levelData.cubeGoals[randIndex].color;
+                int randIndex = Random.Range(0, cubeColors.Length);
+                cube.tileColor = cubeColors[randIndex];
             }
             else cube.tileColor = TileColor.Red;
 
@@ -148,9 +156,9 @@ public class GridManager : MonoBehaviour
         tile.column = c;
 
         float startTileY = startY - r * tileSize + tileSize * levelData.gridSize.y;
-        tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
+        tile.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
         Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-        PlayTileDropAnimation(tileObj.transform, endPos);
+        PlayTileDropAnimation(tile.transform, endPos);
 
         tile.UpdateSprite();
         return tile;
@@ -163,8 +171,9 @@ public class GridManager : MonoBehaviour
         Vector3 startPos = startTile.transform.localPosition;
         visited = new bool[levelData.gridSize.y, levelData.gridSize.x];
         List<Tile> connected = new List<Tile>();
+        bool stop = false;
 
-        DFS(cubeTile.row, cubeTile.column, cubeTile.tileColor, connected, out var cubeCount);
+        DFS(cubeTile.row, cubeTile.column, startTile, connected, ref stop, out var cubeCount);
 
         if (cubeCount >= 2)
         {
@@ -176,12 +185,6 @@ public class GridManager : MonoBehaviour
 
             foreach (var t in connected)
             {
-                if (t is CubeTile ct)
-                {
-                    Color tileColor = SelectTileColor.GetColor(ct.tileColor);
-                    ParticleManager.Instance.SpawnCubeParticles(ct.transform.position, tileColor);
-                }
-
                 grid[t.row, t.column] = null;
             }
 
@@ -190,45 +193,54 @@ public class GridManager : MonoBehaviour
                 SpawnRocket(cubeTile.row, cubeTile.column, startPos);
             }
 
+            OnTilesMatched?.Invoke(connected);
             CollapseColumns();
             RefillGrid();
-            goalManager?.CollectTiles(connected);
         }
     }
 
-    private void DFS(int r, int c, TileColor color, List<Tile> connected, out int cubeCount, bool ballonFound = false)
+    private void DFS(int r, int c, Tile startTile, List<Tile> connected, ref bool stop, out int cubeCount)
     {
         cubeCount = 0;
+
         if (r < 0 || r >= levelData.gridSize.y || c < 0 || c >= levelData.gridSize.x) return;
         if (visited[r, c]) return;
 
         Tile tile = grid[r, c];
         if (tile == null || tile.isItObstacle) return;
-        if (tile is CubeTile cube && cube.tileColor != color) return;
-        if (tile.tileType is TileType.Duck or TileType.Rocket) return;
-        if (ballonFound) return;
 
         visited[r, c] = true;
 
-        if (tile is CubeTile)
+        if (tile.behavior.CanMatch(tile, startTile, connected, this))
         {
             connected.Add(tile);
-            cubeCount = 1;
+            if (tile is CubeTile) cubeCount = 1;
+
+            if (tile.StopFurtherSearch)
+            {
+                stop = true;
+                return;
+            }
         }
-        else if (tile.tileType == TileType.Balloon)
+        else
         {
-            connected.Add(tile);
-            ballonFound = true;
+            stop = true;
+            return;
         }
 
-        DFS(r + 1, c, color, connected, out var tempCount, ballonFound);
-        cubeCount += tempCount;
-        DFS(r - 1, c, color, connected, out tempCount, ballonFound);
-        cubeCount += tempCount;
-        DFS(r, c + 1, color, connected, out tempCount, ballonFound);
-        cubeCount += tempCount;
-        DFS(r, c - 1, color, connected, out tempCount, ballonFound);
-        cubeCount += tempCount;
+        bool stopUp = false, stopDown = false, stopLeft = false, stopRight = false;
+
+        DFS(r + 1, c, startTile, connected, ref stopUp, out var tempCube);
+        cubeCount += tempCube;
+
+        DFS(r - 1, c, startTile, connected, ref stopDown, out tempCube);
+        cubeCount += tempCube;
+
+        DFS(r, c + 1, startTile, connected, ref stopRight, out tempCube);
+        cubeCount += tempCube;
+
+        DFS(r, c - 1, startTile, connected, ref stopLeft, out tempCube);
+        cubeCount += tempCube;
     }
 
     private void CollapseColumns()
@@ -304,56 +316,7 @@ public class GridManager : MonoBehaviour
             {
                 if (grid[r, c] == null)
                 {
-                    float random = Random.value;
-                    float balloonChance = levelData.targetBalloonCount > 0 ? 0.2f : 0.05f;
-                    float duckChance = levelData.targetDuckCount > 0 ? 0.15f : 0.03f;
-
-                    Tile tile;
-
-                    if (random < balloonChance)
-                    {
-                        GameObject obj = Instantiate(passiveTilePrefab, transform);
-                        obj.transform.localScale = Vector3.one * tileSize;
-                        tile = obj.GetComponent<Tile>();
-                        tile.tileType = TileType.Balloon;
-                        tile.UpdateSprite();
-                    }
-                    else if (random < balloonChance + duckChance)
-                    {
-                        GameObject obj = Instantiate(passiveTilePrefab, transform);
-                        obj.transform.localScale = Vector3.one * tileSize;
-                        tile = obj.GetComponent<Tile>();
-                        tile.tileType = TileType.Duck;
-                        tile.UpdateSprite();
-                    }
-                    else
-                    {
-                        GameObject obj = Instantiate(cubeTilePrefab, transform);
-                        obj.transform.localScale = Vector3.one * tileSize;
-                        CubeTile cube = obj.GetComponent<CubeTile>();
-                        cube.tileType = TileType.Cube;
-
-                        if (levelData.cubeGoals.Length > 0)
-                        {
-                            int randIndex = Random.Range(0, levelData.cubeGoals.Length);
-                            cube.tileColor = levelData.cubeGoals[randIndex].color;
-                        }
-                        else cube.tileColor = TileColor.Red;
-
-                        cube.UpdateSprite();
-                        tile = cube;
-                    }
-
-                    tile.row = r;
-                    tile.column = c;
-
-                    float startTileY = startY - r * tileSize + tileSize * rows;
-                    tile.transform.localPosition = new Vector3(startX + c * tileSize, startTileY, 0);
-
-                    Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-                    PlayTileDropAnimation(tile.transform, endPos);
-
-                    grid[r, c] = tile;
+                    grid[r, c] = SpawnRandomTile(r, c, startX, startY);
                 }
             }
         }
@@ -414,5 +377,12 @@ public class GridManager : MonoBehaviour
             .SetLoops(2, LoopType.Yoyo));
 
         return seq;
+    }
+
+    public bool IsNeighbor(Tile cube, Tile other)
+    {
+        int dr = Mathf.Abs(cube.row - other.row);
+        int dc = Mathf.Abs(cube.column - other.column);
+        return (dr == 1 && dc == 0) || (dr == 0 && dc == 1);
     }
 }

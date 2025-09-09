@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum TileType
@@ -18,7 +20,9 @@ public class Tile : MonoBehaviour
 
     [Header("Tile Settings")]
     public TileType tileType;
+    public ITileBehavior behavior;
     public bool isItObstacle;
+    public bool StopFurtherSearch { get; set; }
 
     [Header("References")]
     public SpriteRenderer sr;
@@ -26,12 +30,15 @@ public class Tile : MonoBehaviour
     [Header("Other Sprites")]
     public Sprite balloonSprite;
     public Sprite duckSprite;
+    
+    public static Action<List<Tile>> OnTilesMatched;
 
     private void Awake()
     {
         if (sr == null)
             sr = GetComponent<SpriteRenderer>();
         UpdateSprite();
+        InitializeBehavior();
     }
 
     public virtual void UpdateSprite()
@@ -57,5 +64,22 @@ public class Tile : MonoBehaviour
         {
             grid.TryMatch(this);
         }
+    }
+
+    private void InitializeBehavior()
+    {
+        behavior = tileType switch
+        {
+            TileType.Cube => new CubeBehavior(),
+            TileType.Balloon => new BalloonBehavior(),
+            TileType.Duck => new DuckBehavior(),
+            TileType.Rocket => new RocketBehavior(),
+            _ => null
+        };
+    }
+
+    public void ExecuteBehavior(GridManager grid)
+    {
+        behavior?.Behave(grid, this);
     }
 }

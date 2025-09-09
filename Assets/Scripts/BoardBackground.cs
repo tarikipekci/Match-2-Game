@@ -18,7 +18,7 @@ public class BoardBackground : MonoBehaviour
 
     private void CalculateTileSize()
     {
-        levelData = gridManager.levelData;
+        levelData = GameManager.Instance.currentLevelData;
         int rows = levelData.gridSize.y;
         int columns = levelData.gridSize.x;
 

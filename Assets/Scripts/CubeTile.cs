@@ -13,7 +13,7 @@ public enum TileColor
 public class CubeTile : Tile
 {
     [Header("Cube Settings")]
-    public TileColor tileColor;
+    [HideInInspector] public TileColor tileColor;
 
     [Header("Cube Sprites")]
     public Sprite redSprite;
