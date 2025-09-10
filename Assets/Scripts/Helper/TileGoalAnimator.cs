@@ -7,40 +7,65 @@ namespace Helper
     public class TileGoalAnimator : MonoBehaviour
     {
         [SerializeField] private GameObject uiTilePrefab;
+        [SerializeField] private GameObject goalParticleEffect;
         [SerializeField] private Transform uiParent;
 
         public void AnimateToGoal(Sprite sprite, Tile boardTile, Transform goalTarget, System.Action onComplete,
             float delay = 0f)
         {
-            GameObject uiTile = Instantiate(uiTilePrefab, uiParent);
+            GameObject uiTile = Instantiate(uiTilePrefab, uiParent, false);
             Image img = uiTile.GetComponent<Image>();
             img.sprite = sprite;
 
             RectTransform rect = uiTile.GetComponent<RectTransform>();
             RectTransform goalRect = goalTarget.GetComponent<RectTransform>();
+            RectTransform parentRect = uiParent as RectTransform;
 
+            Canvas canvas = uiParent.GetComponentInParent<Canvas>();
+            Camera cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
+
+            Vector3 startScreen = Camera.main!.WorldToScreenPoint(boardTile.transform.position);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, startScreen, cam,
+                out Vector2 startLocal);
+            rect.anchoredPosition = startLocal;
             rect.localScale = boardTile.transform.lossyScale;
 
-            if (Camera.main != null)
+            Vector3 goalScreen = Camera.main.WorldToScreenPoint(goalTarget.position);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, goalScreen, cam, out Vector2 goalLocal);
+
+            Vector2 downLocal = startLocal + Vector2.down * 30f;
+
+            Sequence seq = DOTween.Sequence();
+            seq.AppendInterval(delay);
+            seq.Append(rect.DOAnchorPos(downLocal, 0.15f).SetEase(Ease.OutQuad));
+            seq.Append(rect.DOAnchorPos(goalLocal, 0.4f).SetEase(Ease.InOutQuad));
+            seq.Join(rect.DOScale(goalRect.localScale, 0.4f).SetEase(Ease.InOutQuad));
+
+            seq.OnComplete(() =>
             {
-                Vector3 startPos = Camera.main.WorldToScreenPoint(boardTile.transform.position);
-                rect.position = startPos;
+                Destroy(uiTile);
+                onComplete?.Invoke();
+            });
+        }
 
-                Vector3 downPos = startPos + Vector3.down * 30f;
+        public void SpawnGoalParticle(Transform goalTarget)
+        {
+            if (goalParticleEffect == null || goalTarget == null) return;
 
-                Sequence seq = DOTween.Sequence();
-                seq.AppendInterval(delay);
+            GameObject fx = Instantiate(goalParticleEffect, goalTarget, false);
+            RectTransform fxRect = fx.GetComponent<RectTransform>();
+            if (fxRect != null)
+                fxRect.anchoredPosition = Vector2.zero;
 
-                seq.Append(rect.DOMove(downPos, 0.15f).SetEase(Ease.OutQuad));
-
-                seq.Append(rect.DOMove(goalTarget.position, 0.4f).SetEase(Ease.InOutQuad));
-                seq.Join(rect.DOScale(goalRect.localScale, 0.4f).SetEase(Ease.InOutQuad));
-
-                seq.OnComplete(() =>
-                {
-                    Destroy(uiTile);
-                    onComplete?.Invoke();
-                });
+            ParticleSystem ps = fx.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                ps.Play();
+                Destroy(fx, ps.main.duration + ps.main.startLifetime.constantMax);
+            }
+            else
+            {
+                Destroy(fx, 2f);
             }
         }
     }

@@ -1,3 +1,4 @@
+using Data;
 using Managers;
 using UnityEngine;
 using UnityEngine.UI;

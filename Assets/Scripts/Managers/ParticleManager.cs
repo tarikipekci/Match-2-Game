@@ -21,11 +21,22 @@ namespace Managers
         private void OnEnable()
         {
             Tile.OnTilesMatched += SpawnParticlesForMatchedTiles;
+            Tile.OnTileMatched += SpawnParticlesForMatchedTile;
         }
 
         private void OnDisable()
         {
             Tile.OnTilesMatched -= SpawnParticlesForMatchedTiles;
+            Tile.OnTileMatched -= SpawnParticlesForMatchedTile;
+        }
+
+        private void SpawnParticlesForMatchedTile(Tile tile)
+        {
+            if (tile is CubeTile cubeTile)
+            {
+                Color color = SelectTileColor.GetColor(cubeTile.tileColor);
+                Instance.SpawnCubeParticles(cubeTile.transform.position, color, tile);
+            }
         }
 
         private void SpawnParticlesForMatchedTiles(List<Tile> tiles)
@@ -35,16 +46,16 @@ namespace Managers
                 if (tile is CubeTile cubeTile)
                 {
                     Color color = SelectTileColor.GetColor(cubeTile.tileColor);
-                    Instance.SpawnCubeParticles(cubeTile.transform.position, color);
+                    Instance.SpawnCubeParticles(cubeTile.transform.position, color, tile);
                 }
             }
         }
 
-        private void SpawnCubeParticles(Vector3 position, Color cubeColor)
+        private void SpawnCubeParticles(Vector3 position, Color cubeColor, Tile tile)
         {
-            if (cubeParticlePrefab == null) return;
+            if (tile == null) return;
 
-            GameObject psObj = Instantiate(cubeParticlePrefab, position, Quaternion.identity);
+            GameObject psObj = Instantiate(tile.particleEffect, position, Quaternion.identity);
 
             var mainPS = psObj.GetComponent<ParticleSystem>();
             if (mainPS == null) return;

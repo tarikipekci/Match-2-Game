@@ -50,10 +50,10 @@ MonoBehaviour:
   column: 0
   tileType: 1
   isItObstacle: 0
+  particleEffect: {fileID: 5185790013355057979, guid: 3429af7b620795d46b4f4f79c24ddf18, type: 3}
   sr: {fileID: 1475689745205798855}
   balloonSprite: {fileID: 21300000, guid: 0ea19bfe22585664590a8b8991f1da34, type: 3}
   duckSprite: {fileID: 21300000, guid: 82f27516110d324449c41cdc2f731048, type: 3}
-  rocketSprite: {fileID: 21300000, guid: 57669760d211e5842bcf5f75f4881b0d, type: 3}
   tileColor: 1
   redSprite: {fileID: 21300000, guid: be4b962a5aafe364a900021c678c28fc, type: 3}
   blueSprite: {fileID: 21300000, guid: ba1b96cddcdd9634da9577a512195417, type: 3}

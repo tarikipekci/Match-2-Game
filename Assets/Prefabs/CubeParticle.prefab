@@ -9752,7 +9752,7 @@ GameObject:
   - component: {fileID: 6815607547424216102}
   - component: {fileID: 6346970353289650558}
   m_Layer: 0
-  m_Name: Particle System
+  m_Name: CubeParticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

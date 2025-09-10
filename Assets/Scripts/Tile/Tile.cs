@@ -26,6 +26,7 @@ public class Tile : MonoBehaviour
     public ITileBehavior behavior;
     public bool isItObstacle;
     public bool StopFurtherSearch { get; set; }
+    public GameObject particleEffect;
 
     [Header("References")]
     public SpriteRenderer sr;
@@ -35,6 +36,7 @@ public class Tile : MonoBehaviour
     public Sprite duckSprite;
     
     public static Action<List<Tile>> OnTilesMatched;
+    public static Action <Tile> OnTileMatched;
 
     private void Awake()
     {

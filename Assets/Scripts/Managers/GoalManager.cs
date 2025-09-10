@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Data;
 using Helper;
 using UI;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace Managers
         public TileGoalAnimator tileGoalAnimator;
 
         private List<GoalUI> activeGoalUIs = new List<GoalUI>();
+        private Dictionary<GoalUI, int> pendingAnimations = new Dictionary<GoalUI, int>();
 
         void Start()
         {
@@ -24,11 +26,13 @@ namespace Managers
         private void OnEnable()
         {
             Tile.OnTilesMatched += CollectTiles;
+            Tile.OnTileMatched += CollectTile;
         }
 
         private void OnDisable()
         {
             Tile.OnTilesMatched -= CollectTiles;
+            Tile.OnTileMatched -= CollectTile;
         }
 
         private void SetupGoals()
@@ -66,26 +70,26 @@ namespace Managers
             }
 
             // --- Balloon Goal ---
-            if (uiCount < 2 && levelData.targetBalloonCount > 0)
+            if (uiCount < 2 && levelData.ballonGoalCount > 0)
             {
                 GameObject go = Instantiate(goalPrefab, goalContainer);
                 GoalUI goalUI = go.GetComponent<GoalUI>();
                 if (goalUI != null)
                 {
-                    goalUI.Setup(sampleTilePrefab.balloonSprite, levelData.targetBalloonCount);
+                    goalUI.Setup(sampleTilePrefab.balloonSprite, levelData.ballonGoalCount);
                     activeGoalUIs.Add(goalUI);
                     uiCount++;
                 }
             }
 
             // --- Duck Goal ---
-            if (uiCount < 2 && levelData.targetDuckCount > 0)
+            if (uiCount < 2 && levelData.duckGoalCount > 0)
             {
                 GameObject go = Instantiate(goalPrefab, goalContainer);
                 GoalUI goalUI = go.GetComponent<GoalUI>();
                 if (goalUI != null)
                 {
-                    goalUI.Setup(sampleTilePrefab.duckSprite, levelData.targetDuckCount);
+                    goalUI.Setup(sampleTilePrefab.duckSprite, levelData.duckGoalCount);
                     activeGoalUIs.Add(goalUI);
                     uiCount++;
                 }
@@ -110,7 +114,8 @@ namespace Managers
                                              ui.GetCurrentCount() > 0;
                             break;
                         case TileType.Balloon:
-                            isMatching = ui.tileImage.sprite == sampleTilePrefab.balloonSprite && ui.GetCurrentCount() > 0;
+                            isMatching = ui.tileImage.sprite == sampleTilePrefab.balloonSprite &&
+                                         ui.GetCurrentCount() > 0;
                             break;
                         case TileType.Duck:
                             isMatching = ui.tileImage.sprite == sampleTilePrefab.duckSprite && ui.GetCurrentCount() > 0;
@@ -119,15 +124,32 @@ namespace Managers
 
                     if (isMatching)
                     {
+                        if (ui.GetCurrentCount() <= 0)
+                        {
+                            Destroy(tile.gameObject);
+                            break;
+                        }
+
+                        ui.ReduceCount(1);
                         Destroy(tile.gameObject);
 
                         float delay = i * 0.05f;
+
+                        if (!pendingAnimations.ContainsKey(ui))
+                            pendingAnimations[ui] = 0;
+
+                        pendingAnimations[ui]++;
 
                         tileGoalAnimator.AnimateToGoal(
                             tile.sr.sprite,
                             tile,
                             ui.tileImage.transform,
-                            () => ui.ReduceCount(1),
+                            () =>
+                            {
+                                pendingAnimations[ui]--;
+                                if (pendingAnimations[ui] <= 0)
+                                    tileGoalAnimator.SpawnGoalParticle(ui.tileImage.transform);
+                            },
                             delay
                         );
                         break;

@@ -45,9 +45,10 @@ public class RocketTile : Tile, IActivatable
         int col = column;
 
         const float duration = 0.5f;
+        const float distanceMultiplier = 3f;
         float totalDist = horizontal
-            ? GameManager.Instance.currentLevelData.gridSize.x * board.tileSize
-            : GameManager.Instance.currentLevelData.gridSize.y * board.tileSize;
+            ? GameManager.Instance.currentLevelData.gridSize.x * board.tileSize * distanceMultiplier
+            : GameManager.Instance.currentLevelData.gridSize.y * board.tileSize * distanceMultiplier;
 
         if (horizontal)
         {
@@ -99,7 +100,8 @@ public class RocketTile : Tile, IActivatable
             activatableTile.Activate(board);
         else
         {
-            board.goalManager?.CollectTile(tile);
+            tile.particleEffect = particleEffect;
+            OnTileMatched?.Invoke(tile);
             board.GetGrid()[tile.row, tile.column] = null;
         }
     }

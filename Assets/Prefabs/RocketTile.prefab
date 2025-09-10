@@ -135,16 +135,11 @@ MonoBehaviour:
   row: 0
   column: 0
   tileType: 4
-  tileColor: 0
-  sr: {fileID: 0}
-  redSprite: {fileID: 0}
-  blueSprite: {fileID: 0}
-  greenSprite: {fileID: 0}
-  yellowSprite: {fileID: 0}
-  purpleSprite: {fileID: 0}
+  isItObstacle: 0
+  particleEffect: {fileID: 9157105887711914197, guid: c4f829cb7dd4b864caf8832ec5b1ee55, type: 3}
+  sr: {fileID: 3661914543515240896}
   balloonSprite: {fileID: 0}
   duckSprite: {fileID: 0}
-  rocketSprite: {fileID: 0}
   direction: 0
   leftPart: {fileID: 3100401089917499463}
   rightPart: {fileID: 4038467986908967276}

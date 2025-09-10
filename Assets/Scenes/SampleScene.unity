@@ -745,6 +745,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiTilePrefab: {fileID: 7291688341934491031, guid: 434788f2b8cf9ba4da14d441d1816623, type: 3}
+  goalParticleEffect: {fileID: 9157105887711914197, guid: bf62a798b5d750b46bf780c46bee6f59, type: 3}
   uiParent: {fileID: 1178690176}
 --- !u!4 &905396644
 Transform:
@@ -1102,8 +1103,8 @@ Canvas:
   m_GameObject: {fileID: 1178690172}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1

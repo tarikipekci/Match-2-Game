@@ -266,3 +266,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileImage: {fileID: 592503936203139010}
   countText: {fileID: 3079408921508385559}
+  goalParticleEffect: {fileID: 9157105887711914197, guid: c4f829cb7dd4b864caf8832ec5b1ee55, type: 3}
