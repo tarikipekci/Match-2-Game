@@ -26,6 +26,7 @@ namespace Helper
             Canvas canvas = uiParent.GetComponentInParent<Canvas>();
             Camera cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
 
+            // Convert world position to UI local position
             Vector3 startScreen = Camera.main!.WorldToScreenPoint(worldStartPosition);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, startScreen, cam,
                 out Vector2 startLocal);
@@ -35,19 +36,19 @@ namespace Helper
             Vector3 goalScreen = Camera.main.WorldToScreenPoint(goalTarget.position);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, goalScreen, cam, out Vector2 goalLocal);
 
-            Vector2 downLocal = startLocal + Vector2.down * 30f;
+            Vector2 downLocal = startLocal + Vector2.down * 30f; // small downward offset for bounce effect
 
             Sequence seq = DOTween.Sequence();
             seq.AppendInterval(delay);
-            seq.Append(rect.DOAnchorPos(downLocal, .15f).SetEase(Ease.OutQuad));
-            seq.Append(rect.DOAnchorPos(goalLocal, .4f).SetEase(Ease.InOutQuad));
-            seq.Join(rect.DOScale(goalRect.localScale, .4f).SetEase(Ease.InOutQuad));
+            seq.Append(rect.DOAnchorPos(downLocal, .15f).SetEase(Ease.OutQuad)); // initial drop
+            seq.Append(rect.DOAnchorPos(goalLocal, .4f).SetEase(Ease.InOutQuad)); // move to goal
+            seq.Join(rect.DOScale(goalRect.localScale, .4f).SetEase(Ease.InOutQuad)); // scale to match goal
 
             seq.OnComplete(() =>
             {
                 SoundManager.Instance.PlaySound(SoundManager.Instance.cubeCollect);
                 Destroy(uiTile);
-                onComplete?.Invoke();
+                onComplete?.Invoke(); // callback when animation finishes
             });
         }
 
@@ -64,11 +65,11 @@ namespace Helper
             if (ps != null)
             {
                 ps.Play();
-                Destroy(fx, ps.main.duration + ps.main.startLifetime.constantMax);
+                Destroy(fx, ps.main.duration + ps.main.startLifetime.constantMax); // auto destroy after particle ends
             }
             else
             {
-                Destroy(fx, 2f);
+                Destroy(fx, 2f); // fallback destroy
             }
         }
     }

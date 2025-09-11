@@ -22,7 +22,7 @@ namespace Managers
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
-        
+
             DOTween.SetTweensCapacity(500, 500);
             DOTween.Init();
         }
@@ -32,13 +32,13 @@ namespace Managers
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 0;
 
-            StartCoroutine(DOTweenWarmup());
+            StartCoroutine(DOTweenWarmup()); // Prevent first-frame tween lag
         }
 
         private IEnumerator DOTweenWarmup()
         {
             float dummy = 0f;
-            DOTween.To(() => dummy, x => dummy = x, 1f, 0.01f);
+            DOTween.To(() => dummy, x => dummy = x, 1f, 0.01f); // Tiny tween to warm-up DOTween
             yield return null;
         }
     }

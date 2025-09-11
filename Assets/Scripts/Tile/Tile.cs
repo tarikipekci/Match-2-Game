@@ -22,19 +22,22 @@ public class Tile : MonoBehaviour, IPoolable
 
     [HideInInspector] public int column;
 
-    [Header("Tile Settings")] public TileType tileType;
+    [Header("Tile Settings")] 
+    public TileType tileType;
     public ITileBehavior behavior;
     public bool isItObstacle;
     private bool isMatchable;
-    public bool StopFurtherSearch { get; set; }
-    public GameObject particleEffect;
+    public bool StopFurtherSearch { get; set; } 
+    public GameObject particleEffect; 
     [SerializeField] public GameObject ballonParticleEffect;
     [SerializeField] public GameObject duckParticleEffect;
     [HideInInspector] public GridManager ownerGrid;
 
-    [Header("References")] public SpriteRenderer sr;
+    [Header("References")] 
+    public SpriteRenderer sr;
 
-    [Header("Other Sprites")] public Sprite balloonSprite;
+    [Header("Other Sprites")] 
+    public Sprite balloonSprite;
     public Sprite duckSprite;
 
     public static Action<List<Tile>, List<Vector3>> OnTilesMatched;
@@ -44,10 +47,11 @@ public class Tile : MonoBehaviour, IPoolable
     {
         if (sr == null)
             sr = GetComponent<SpriteRenderer>();
+
         UpdateSprite();
         InitializeBehavior();
-        SetIsMatchable();
-        SetParticleEffect();
+        SetIsMatchable(); // determine if tile can be matched
+        SetParticleEffect(); // set the correct particle effect
     }
 
     public virtual void UpdateSprite()
@@ -63,6 +67,7 @@ public class Tile : MonoBehaviour, IPoolable
 
     private void OnMouseDown()
     {
+        // Handle activation or matching when tile is clicked
         if (this is IActivatable activatable)
         {
             activatable.Activate(ownerGrid);
@@ -76,6 +81,7 @@ public class Tile : MonoBehaviour, IPoolable
 
     public void InitializeBehavior()
     {
+        // Assign behavior based on tile type
         behavior = tileType switch
         {
             TileType.Cube => new CubeBehavior(),
@@ -86,8 +92,9 @@ public class Tile : MonoBehaviour, IPoolable
         };
     }
 
-    private void SetIsMatchable()
+    public void SetIsMatchable()
     {
+        // Set whether this tile can participate in matches
         isMatchable = tileType switch
         {
             TileType.Balloon => true,
@@ -101,6 +108,7 @@ public class Tile : MonoBehaviour, IPoolable
     
     private void SetParticleEffect()
     {
+        // Assign particle effect based on tile type
         particleEffect = tileType switch
         {
             TileType.Balloon => ballonParticleEffect,
@@ -110,15 +118,9 @@ public class Tile : MonoBehaviour, IPoolable
         };
     }
 
-    public bool GetIsMatchable()
-    {
-        return isMatchable;
-    }
+    public bool GetIsMatchable() => isMatchable;
     
-    public void SetIsMatchable(bool newValue)
-    {
-        isMatchable = newValue;
-    }
+    public void UpdateMatchableStatus(bool newValue) => isMatchable = newValue;
 
     public void OnSpawn()
     {

@@ -19,7 +19,7 @@ namespace TileBehaviors
 
         public void Behave(GridManager grid, Tile tile)
         {
-            tile.SetIsMatchable(false);
+            tile.UpdateMatchableStatus(false);
             if (tile.tileType == TileType.Duck)
             {
                 int lastRow = GameManager.Instance.currentLevelData.gridSize.y - 1;

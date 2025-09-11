@@ -11,7 +11,7 @@ namespace TileBehaviors
             // Balloon behavior
             if (tile.tileType == TileType.Balloon)
             {
-                tile.SetIsMatchable(true);
+                tile.UpdateMatchableStatus(true);
                 SoundManager.Instance.PlaySound(SoundManager.Instance.balloonPop);
             }
         }

@@ -32,6 +32,7 @@ namespace Managers
         {
             if (tile == null) return;
 
+            // Decide which particle effect to spawn based on tile type
             switch (tile.tileType)
             {
                 case TileType.Cube:
@@ -52,6 +53,7 @@ namespace Managers
                 Vector3 pos = positions[i];
                 if (tile == null) continue;
 
+                // Spawn appropriate particles for each matched tile
                 switch (tile.tileType)
                 {
                     case TileType.Cube:
@@ -69,7 +71,7 @@ namespace Managers
         {
             if (cubeTile == null || cubeTile.particleEffect == null) return;
 
-            Color color = SelectTileColor.GetColor(cubeTile.tileColor);
+            Color color = SelectTileColor.GetColor(cubeTile.tileColor); // Get color based on tile
             SpawnParticles(cubeTile.particleEffect, position, color);
         }
 
@@ -89,8 +91,9 @@ namespace Managers
             var main = mainPS.main;
             main.playOnAwake = false;
             main.startDelay = 0f;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.simulationSpace = ParticleSystemSimulationSpace.World; // Ensure particles are in world space
 
+            // Update color for sub-emitters as well
             var subEmittersModule = mainPS.subEmitters;
             for (int i = 0; i < subEmittersModule.subEmittersCount; i++)
             {
@@ -110,8 +113,8 @@ namespace Managers
                 renderer.sortingOrder = 100;
             }
 
-            mainPS.Emit(1);
-            Destroy(psObj, mainPS.main.startLifetime.constantMax + 0.1f);
+            mainPS.Emit(1); // Emit a single burst
+            Destroy(psObj, mainPS.main.startLifetime.constantMax + 0.1f); // Clean up after lifetime
         }
     }
 }

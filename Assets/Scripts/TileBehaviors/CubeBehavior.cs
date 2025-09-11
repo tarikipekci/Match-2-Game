@@ -11,7 +11,7 @@ namespace TileBehaviors
             // Cube behavior
             if (tile.tileType == TileType.Cube)
             {
-                tile.SetIsMatchable(true);
+                tile.UpdateMatchableStatus(true);
                 SoundManager.Instance.PlaySound(SoundManager.Instance.cubeExplode);
             }
         }

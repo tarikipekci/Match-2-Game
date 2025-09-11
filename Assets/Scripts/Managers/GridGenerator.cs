@@ -37,13 +37,14 @@ namespace Managers
                 {
                     Tile tile;
 
+                    // Check if there is predefined tile data for this row
                     if (levelData.startingRows != null && r < levelData.startingRows.Length)
                     {
                         var rowData = levelData.startingRows[r];
                         if (rowData.tiles != null && c < rowData.tiles.Length)
-                            tile = SpawnTileFromData(rowData.tiles[c], r, c, startX, startY);
+                            tile = SpawnTileFromData(rowData.tiles[c], r, c, startX, startY); // Spawn tile according to data
                         else
-                            tile = SpawnRandomTile(r, c, startX, startY);
+                            tile = SpawnRandomTile(r, c, startX, startY); // Otherwise spawn randomly
                     }
                     else
                     {
@@ -65,6 +66,7 @@ namespace Managers
             switch (data.tileType)
             {
                 case TileType.Cube:
+                    // Use object pool if available
                     tileObj = PoolManager.Instance.SpawnFromPool(cubeTilePrefab.name, parent);
                     if (tileObj == null)
                         tileObj = Object.Instantiate(cubeTilePrefab, parent);
@@ -78,6 +80,7 @@ namespace Managers
 
                 case TileType.Balloon:
                 case TileType.Duck:
+                    // Spawn passive tiles like Balloon or Duck
                     tileObj = PoolManager.Instance.SpawnFromPool(passiveTilePrefab.name, parent);
                     if (tileObj == null)
                         tileObj = Object.Instantiate(passiveTilePrefab, parent);
@@ -97,14 +100,16 @@ namespace Managers
                     break;
             }
 
+            // Set tile position in grid
             tile.row = r;
             tile.column = c;
             tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
             tileObj.transform.localScale = Vector3.one * tileSize;
 
-            tile.OnSpawn();
+            tile.OnSpawn(); // Call tile's OnSpawn for initialization
             tile.ownerGrid = GameManager.Instance.currentGridManager;
-            tile.InitializeBehavior();
+            tile.InitializeBehavior(); // Initialize specific tile behavior
+            tile.SetIsMatchable();
 
             return tile;
         }
@@ -119,7 +124,7 @@ namespace Managers
             float duckChance = passiveTypes.Contains(TileType.Duck) ? 0.15f : 0f;
 
             if (isBottom)
-                duckChance = 0f;
+                duckChance = 0f; // Prevent ducks spawning at the bottom row
 
             GameObject obj;
 
@@ -145,6 +150,7 @@ namespace Managers
                 CubeTile cube = obj.GetComponent<CubeTile>();
                 cube.tileType = TileType.Cube;
 
+                // Assign a random color from the cube pool
                 TileColor[] cubeColors = levelData.spawnPool.cubePool.tileColors;
                 cube.tileColor = cubeColors.Length > 0 ? cubeColors[Random.Range(0, cubeColors.Length)] : TileColor.Red;
                 cube.UpdateSprite();
@@ -157,7 +163,8 @@ namespace Managers
             tile.transform.localPosition = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
             tile.UpdateSprite();
             tile.ownerGrid = GameManager.Instance.currentGridManager;
-            tile.InitializeBehavior();
+            tile.InitializeBehavior(); // Initialize behavior after spawning
+            tile.SetIsMatchable();
 
             return tile;
         }

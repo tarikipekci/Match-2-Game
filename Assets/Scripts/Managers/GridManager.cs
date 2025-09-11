@@ -23,13 +23,12 @@ namespace Managers
         
         public static Action<GridManager> OnBoardReady;
 
-
         private Tile[,] grid;
         private bool[,] visited;
 
         void Start()
         {
-            InputManager.DisableInput();
+            InputManager.DisableInput(); // Disable input until board is ready
             levelData = GameManager.Instance.currentLevelData;
             GenerateGrid();
             collapseManager = new CollapseManager(grid, levelData.gridSize, this, goalManager, tileSize);
@@ -40,7 +39,7 @@ namespace Managers
             CalculateTileSize();
             gridGenerator = new GridGenerator(levelData, cubeTilePrefab, passiveTilePrefab, tileSize, transform);
             grid = gridGenerator.GenerateGrid();
-            OnBoardReady(this);
+            OnBoardReady(this); // Notify that the board is ready
         }
 
         private void CalculateTileSize()
@@ -48,7 +47,7 @@ namespace Managers
             int rows = levelData.gridSize.y;
             int columns = levelData.gridSize.x;
             const float boardSizeRatio = 4f;
-            tileSize = Mathf.Min(boardSizeRatio / columns, boardSizeRatio / rows);
+            tileSize = Mathf.Min(boardSizeRatio / columns, boardSizeRatio / rows); // Keep tiles proportional
         }
 
         public void TryMatch(Tile startTile)
@@ -68,17 +67,18 @@ namespace Managers
 
             foreach (var t in connected)
             {
-                grid[t.row, t.column] = null;
+                grid[t.row, t.column] = null; // Remove matched tiles
             }
 
             if (cubeCount >= 5)
             {
+                // Spawn rocket if match is big enough
                 SpawnRocket(((CubeTile)startTile).row, ((CubeTile)startTile).column, startTile.transform.position);
             }
 
             List<Vector3> positions = connected.Select(t => t.transform.position).ToList();
-            OnTilesMatched?.Invoke(connected, positions);
-            collapseManager.CollapseAndRefill();
+            OnTilesMatched?.Invoke(connected, positions); // Trigger tile match events
+            collapseManager.CollapseAndRefill(); // Collapse columns and refill empty spaces
         }
 
         public Tile GetTile(int r, int c) => grid[r, c];
@@ -91,7 +91,7 @@ namespace Managers
 
             RocketTile rocket = rocketObj.GetComponent<RocketTile>();
             rocket.ownerGrid = GameManager.Instance.currentGridManager;
-            rocket.Initialize();
+            rocket.Initialize(); // Initialize rocket behavior
             rocketObj.transform.localPosition = spawnPos;
 
             grid[row, column] = rocket;
@@ -106,7 +106,7 @@ namespace Managers
             activeTilesCount--;
             if (activeTilesCount <= 0)
             {
-                collapseManager.CollapseAndRefill();
+                collapseManager.CollapseAndRefill(); // Collapse grid when all active tiles finish
             }
         }
 
@@ -122,17 +122,17 @@ namespace Managers
 
             Vector3 originalScale = tileTransform.localScale;
 
-            // First fall
+            // First fall animation
             seq.Append(tileTransform.DOLocalMove(endPos, moveDownTime).SetEase(Ease.OutCubic));
 
-            // little bounce
+            // Small bounce upwards
             seq.Append(
                 tileTransform.DOLocalMove(endPos + Vector3.up * bounceHeight, bounceUpTime).SetEase(Ease.OutQuad));
 
-            // last fall
+            // Final settle down
             seq.Append(tileTransform.DOLocalMove(endPos, settleTime).SetEase(Ease.InQuad));
 
-            // Scale updating relative to original scale
+            // Scale effect during bounce
             seq.Join(tileTransform.DOScale(originalScale * scaleAmount, settleTime * 0.5f)
                 .SetLoops(2, LoopType.Yoyo));
 
@@ -143,7 +143,7 @@ namespace Managers
         {
             int dr = Mathf.Abs(cube.row - other.row);
             int dc = Mathf.Abs(cube.column - other.column);
-            return (dr == 1 && dc == 0) || (dr == 0 && dc == 1);
+            return (dr == 1 && dc == 0) || (dr == 0 && dc == 1); // Check if two tiles are adjacent
         }
     }
 }

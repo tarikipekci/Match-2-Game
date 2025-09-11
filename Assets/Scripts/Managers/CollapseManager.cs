@@ -12,6 +12,7 @@ namespace Managers
         private GoalManager goalManager;
         private float tileSize;
 
+        // Triggered when a tile lands after collapsing or refill
         public static Action<GridManager, Tile> OnTileLanded;
 
         public CollapseManager(Tile[,] grid, Vector2Int gridSize, GridManager gridManager, GoalManager goalManager,
@@ -31,7 +32,8 @@ namespace Managers
 
         private void CollapseColumns()
         {
-            InputManager.DisableInput();
+            InputManager.DisableInput(); // Prevent player input during collapse
+
             int rows = gridSize.y;
             int columns = gridSize.x;
             float startX = -columns * tileSize / 2 + tileSize / 2;
@@ -45,43 +47,39 @@ namespace Managers
                 for (int r = rows - 1; r >= 0; r--)
                 {
                     Tile tile = grid[r, c];
-                    if (tile != null)
+                    if (tile != null && r != emptyRow)
                     {
-                        if (r != emptyRow)
+                        // Move tile to the lowest empty row
+                        grid[emptyRow, c] = tile;
+                        grid[r, c] = null;
+                        tile.row = emptyRow;
+                        tile.column = c;
+
+                        Vector3 endPos = new Vector3(startX + c * tileSize, startY - emptyRow * tileSize, 0);
+                        activeTweens++;
+
+                        // Animate tile falling
+                        gridManager.PlayTileDropAnimation(tile.transform, endPos).OnComplete(() =>
                         {
-                            grid[emptyRow, c] = tile;
-                            grid[r, c] = null;
+                            activeTweens--;
+                            tile.InitializeBehavior();
+                            OnTileLanded?.Invoke(gridManager, tile);
 
-                            tile.row = emptyRow;
-                            tile.column = c;
-
-                            Vector3 endPos = new Vector3(startX + c * tileSize, startY - emptyRow * tileSize, 0);
-                            activeTweens++;
-
-                            gridManager.PlayTileDropAnimation(tile.transform, endPos).OnComplete(() =>
+                            // After all animations, check if refill is needed
+                            if (activeTweens == 0)
                             {
-                                activeTweens--;
-                                tile.InitializeBehavior();
-                                OnTileLanded?.Invoke(gridManager, tile);
-                                if (activeTweens == 0)
+                                if (CheckForEmptySpaces())
+                                    CollapseAndRefill();
+                                else
                                 {
-                                    if (CheckForEmptySpaces())
-                                    {
-                                        CollapseAndRefill();
-                                    }
-                                    else
-                                    {
-                                        RefillGrid();
-
-                                        if (!CheckForEmptySpaces())
-                                            GridManager.OnBoardReady?.Invoke(gridManager);
-                                    }
+                                    RefillGrid();
+                                    if (!CheckForEmptySpaces())
+                                        GridManager.OnBoardReady?.Invoke(gridManager);
                                 }
-                            });
-                        }
-
-                        emptyRow--;
+                            }
+                        });
                     }
+                    if (tile != null) emptyRow--;
                 }
             }
 
@@ -117,8 +115,7 @@ namespace Managers
                 {
                     if (grid[r, c] == null)
                     {
-                        bool isBottom = (r == rows - 1); 
-
+                        bool isBottom = (r == rows - 1); // Needed for spawn logic in GridGenerator
                         Tile newTile = gridManager.gridGenerator.SpawnRandomTile(r, c, startX, startY, isBottom);
                         grid[r, c] = newTile;
 
@@ -128,6 +125,7 @@ namespace Managers
                         Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
                         activeTweens++;
 
+                        // Animate newly spawned tile falling
                         gridManager.PlayTileDropAnimation(newTile.transform, endPos).OnComplete(() =>
                         {
                             activeTweens--;
@@ -135,13 +133,12 @@ namespace Managers
                             OnTileLanded?.Invoke(gridManager, newTile);
 
                             if (activeTweens <= 0)
-                            {
                                 GridManager.OnBoardReady?.Invoke(gridManager);
-                            }
                         });
                     }
                 }
             }
+
             if (activeTweens == 0)
                 GridManager.OnBoardReady?.Invoke(gridManager);
         }

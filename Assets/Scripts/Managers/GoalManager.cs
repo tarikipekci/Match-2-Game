@@ -15,12 +15,12 @@ namespace Managers
         public TileGoalAnimator tileGoalAnimator;
 
         private List<GoalUI> activeGoalUIs = new List<GoalUI>();
-        private Dictionary<GoalUI, int> pendingAnimations = new Dictionary<GoalUI, int>();
+        private Dictionary<GoalUI, int> pendingAnimations = new Dictionary<GoalUI, int>(); // Track ongoing animations per goal UI
 
         void Start()
         {
             levelData = GameManager.Instance.currentLevelData;
-            SetupGoals();
+            SetupGoals(); // Initialize the goal UI elements
         }
 
         private void OnEnable()
@@ -68,6 +68,7 @@ namespace Managers
                 }
             }
 
+            // Balloon goal setup
             if (uiCount < 2 && levelData.ballonGoalCount > 0)
             {
                 GameObject go = Instantiate(goalPrefab, goalContainer);
@@ -80,6 +81,7 @@ namespace Managers
                 }
             }
 
+            // Duck goal setup
             if (uiCount < 2 && levelData.duckGoalCount > 0)
             {
                 GameObject go = Instantiate(goalPrefab, goalContainer);
@@ -98,15 +100,20 @@ namespace Managers
             for (int i = 0; i < tiles.Count; i++)
             {
                 Tile tile = tiles[i];
+                tile.SetIsMatchable();
+                
                 if (tile.GetIsMatchable())
                 {
+                    // Trigger tile behavior (like duck or balloon special effects)
                     tile.behavior.Behave(GameManager.Instance.currentGridManager, tile);
+                    Debug.Log("deneme");
                 }
 
                 foreach (var ui in activeGoalUIs)
                 {
                     bool isMatching = false;
 
+                    // Determine if this tile matches the current goal UI
                     switch (tile.tileType)
                     {
                         case TileType.Cube:
@@ -132,6 +139,8 @@ namespace Managers
                         }
 
                         PoolManager.Instance.ReturnToPool(tile.gameObject);
+
+                        // For non-cube tiles, just reduce the goal count immediately
                         if (tile.tileType != TileType.Cube)
                         {
                             ui.ReduceCount(1);
@@ -140,9 +149,11 @@ namespace Managers
 
                         float delay = i * 0.05f;
 
+                        // Initialize pending animation count if not already present
                         if (!pendingAnimations.ContainsKey(ui))
                             pendingAnimations[ui] = 0;
 
+                        // Limit the number of cube animations to remaining goal count
                         if (pendingAnimations[ui] >= ui.GetCurrentCount())
                         {
                             break;
@@ -150,6 +161,7 @@ namespace Managers
 
                         pendingAnimations[ui]++;
 
+                        // Animate the tile flying to the goal UI
                         tileGoalAnimator.AnimateToGoal(
                             tile.sr.sprite,
                             positions[i],
@@ -159,7 +171,7 @@ namespace Managers
                                 ui.ReduceCount(1);
                                 pendingAnimations[ui]--;
                                 if (pendingAnimations[ui] <= 0)
-                                    tileGoalAnimator.SpawnGoalParticle(ui.tileImage.transform);
+                                    tileGoalAnimator.SpawnGoalParticle(ui.tileImage.transform); // Spawn particle only when all animations complete
                             },
                             delay
                         );

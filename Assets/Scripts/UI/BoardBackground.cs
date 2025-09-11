@@ -16,8 +16,8 @@ namespace UI
 
         void Start()
         {
-            CalculateTileSize();
-            UpdateBackgroundSize();
+            CalculateTileSize(); // calculate the size of each tile based on board dimensions
+            UpdateBackgroundSize(); // adjust the background image to fit the board
         }
 
         private void CalculateTileSize()
@@ -28,16 +28,21 @@ namespace UI
 
             const float boardSizeRatio = 4f;
 
-            tileSize = Mathf.Min(boardSizeRatio / columns, boardSizeRatio / rows);
+            tileSize = Mathf.Min(boardSizeRatio / columns, boardSizeRatio / rows); 
+            // ensures tiles fit within the board area
         }
 
         private void UpdateBackgroundSize()
         {
+            // multipliers for additional padding/scaling
             float xMultiplier = 1f / (levelData.gridSize.x * 0.2f + 0.1f) * 20;
             float yMultiplier = 1f / (levelData.gridSize.y * 0.2f + 0.1f) * 30;
 
-            backgroundImage.rectTransform.sizeDelta = new Vector2(levelData.gridSize.x * (tileSize * 100)*2 + xMultiplier,
-                levelData.gridSize.y * (tileSize * 100)*2 + yMultiplier);
+            // set the background size to cover the entire grid
+            backgroundImage.rectTransform.sizeDelta = new Vector2(
+                levelData.gridSize.x * (tileSize * 100) * 2 + xMultiplier,
+                levelData.gridSize.y * (tileSize * 100) * 2 + yMultiplier
+            );
             backgroundImage.rectTransform.localScale = Vector3.one;
             backgroundImage.rectTransform.localPosition = Vector3.zero;
         }

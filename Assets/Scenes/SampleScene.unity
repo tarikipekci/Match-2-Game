@@ -154,9 +154,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pools:
   - prefab: {fileID: 7470661148555225261, guid: 7736f318f96a8cb438450a9c68d18866, type: 3}
-    size: 20
+    size: 50
   - prefab: {fileID: 7470661148555225261, guid: 4a56e29b35913ca4fb82f941b524ae1d, type: 3}
-    size: 20
+    size: 50
 --- !u!4 &141960942
 Transform:
   m_ObjectHideFlags: 0
@@ -948,7 +948,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c10252365d1b9c24183073e7f7057af8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 1488493805}
+  gridManager: {fileID: 0}
   backgroundImage: {fileID: 1040408092}
 --- !u!1 &1089577990
 GameObject:
