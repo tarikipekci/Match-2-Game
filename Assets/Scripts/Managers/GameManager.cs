@@ -10,6 +10,7 @@ namespace Managers
         public static GameManager Instance { get; private set; }
 
         public LevelData currentLevelData;
+        public GridManager currentGridManager;
 
         private void Awake()
         {

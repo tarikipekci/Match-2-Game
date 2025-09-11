@@ -19,7 +19,8 @@ namespace TileBehaviors
 
                 if (tile.row == lastRow)
                 {
-                    grid.goalManager.CollectTile(tile, tile.transform.localPosition);
+                    SoundManager.Instance.PlaySound(SoundManager.Instance.duckSound);
+                    PoolManager.Instance.ReturnToPool(tile.gameObject);
                     grid.GetGrid()[tile.row, tile.column] = null;
                 }
             }

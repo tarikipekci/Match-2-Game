@@ -103,6 +103,8 @@ namespace Managers
             tileObj.transform.localScale = Vector3.one * tileSize;
 
             tile.OnSpawn();
+            tile.ownerGrid = GameManager.Instance.currentGridManager;
+            tile.InitializeBehavior();
 
             return tile;
         }
@@ -151,6 +153,8 @@ namespace Managers
             tile.column = c;
             tile.transform.localPosition = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
             tile.UpdateSprite();
+            tile.ownerGrid = GameManager.Instance.currentGridManager;
+            tile.InitializeBehavior();
 
             return tile;
         }

@@ -9,6 +9,7 @@ namespace TileBehaviors
         public void Behave(GridManager grid, Tile tile)
         {
             // Balloon behavior
+            SoundManager.Instance.PlaySound(SoundManager.Instance.balloonPop);
         }
 
         public bool CanMatch(Tile self, Tile startTile, List<Tile> connected, GridManager grid)

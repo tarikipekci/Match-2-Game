@@ -90,6 +90,7 @@ namespace Managers
             rocketObj.transform.localScale = Vector3.one * tileSize;
 
             RocketTile rocket = rocketObj.GetComponent<RocketTile>();
+            rocket.ownerGrid = GameManager.Instance.currentGridManager;
             rocket.Initialize();
             rocketObj.transform.localPosition = spawnPos;
 

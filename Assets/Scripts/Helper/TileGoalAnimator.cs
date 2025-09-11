@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Managers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,6 +45,7 @@ namespace Helper
 
             seq.OnComplete(() =>
             {
+                SoundManager.Instance.PlaySound(SoundManager.Instance.cubeCollect);
                 Destroy(uiTile);
                 onComplete?.Invoke();
             });

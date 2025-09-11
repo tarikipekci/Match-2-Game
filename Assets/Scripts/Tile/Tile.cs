@@ -27,7 +27,8 @@ public class Tile : MonoBehaviour, IPoolable
     public bool isItObstacle;
     public bool StopFurtherSearch { get; set; }
     public GameObject particleEffect;
-
+    [HideInInspector] public GridManager ownerGrid;
+    
     [Header("References")]
     public SpriteRenderer sr;
 
@@ -58,15 +59,13 @@ public class Tile : MonoBehaviour, IPoolable
 
     private void OnMouseDown()
     {
-        GridManager grid = FindObjectOfType<GridManager>();
-
         if (this is IActivatable activatable)
         {
-            activatable.Activate(grid);
+            activatable.Activate(ownerGrid);
         }
         else
         {
-            grid.TryMatch(this);
+            ownerGrid.TryMatch(this);
         }
     }
 
@@ -81,16 +80,12 @@ public class Tile : MonoBehaviour, IPoolable
             _ => null
         };
     }
-
-    public void ExecuteBehavior(GridManager grid)
-    {
-        behavior?.Behave(grid, this);
-    }
-
+    
     public void OnSpawn()
     {
         gameObject.SetActive(true);
         InitializeBehavior();
+        ownerGrid = GameManager.Instance.currentGridManager;
     }
 
     public void OnDespawn()

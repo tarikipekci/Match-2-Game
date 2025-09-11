@@ -98,6 +98,7 @@ namespace Managers
             for (int i = 0; i < tiles.Count; i++)
             {
                 Tile tile = tiles[i];
+                tile.behavior.Behave(GameManager.Instance.currentGridManager,tile);
 
                 foreach (var ui in activeGoalUIs)
                 {
@@ -129,6 +130,8 @@ namespace Managers
 
                         ui.ReduceCount(1);
                         PoolManager.Instance.ReturnToPool(tile.gameObject);
+                        if (tile.tileType != TileType.Cube)
+                            break;
 
                         float delay = i * 0.05f;
 
