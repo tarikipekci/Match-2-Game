@@ -98,7 +98,10 @@ namespace Managers
             for (int i = 0; i < tiles.Count; i++)
             {
                 Tile tile = tiles[i];
-                tile.behavior.Behave(GameManager.Instance.currentGridManager,tile);
+                if (tile.GetIsMatchable())
+                {
+                    tile.behavior.Behave(GameManager.Instance.currentGridManager, tile);
+                }
 
                 foreach (var ui in activeGoalUIs)
                 {
@@ -128,24 +131,32 @@ namespace Managers
                             break;
                         }
 
-                        ui.ReduceCount(1);
                         PoolManager.Instance.ReturnToPool(tile.gameObject);
                         if (tile.tileType != TileType.Cube)
+                        {
+                            ui.ReduceCount(1);
                             break;
+                        }
 
                         float delay = i * 0.05f;
 
                         if (!pendingAnimations.ContainsKey(ui))
                             pendingAnimations[ui] = 0;
 
+                        if (pendingAnimations[ui] >= ui.GetCurrentCount())
+                        {
+                            break;
+                        }
+
                         pendingAnimations[ui]++;
 
                         tileGoalAnimator.AnimateToGoal(
                             tile.sr.sprite,
-                            positions[i], 
+                            positions[i],
                             ui.tileImage.transform,
                             () =>
                             {
+                                ui.ReduceCount(1);
                                 pendingAnimations[ui]--;
                                 if (pendingAnimations[ui] <= 0)
                                     tileGoalAnimator.SpawnGoalParticle(ui.tileImage.transform);

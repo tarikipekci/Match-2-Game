@@ -19,7 +19,7 @@ namespace Managers
         public GoalManager goalManager;
         private int activeTilesCount;
         public GridGenerator gridGenerator;
-        private CollapseManager collapseManager;
+        public CollapseManager collapseManager;
         
         public static Action<GridManager> OnBoardReady;
 

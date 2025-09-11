@@ -109,7 +109,7 @@ namespace Managers
             return tile;
         }
 
-        public Tile SpawnRandomTile(int r, int c, float startX, float startY)
+        public Tile SpawnRandomTile(int r, int c, float startX, float startY, bool isBottom = false)
         {
             Tile tile;
             float random = Random.value;
@@ -117,6 +117,9 @@ namespace Managers
             List<TileType> passiveTypes = new List<TileType>(levelData.spawnPool.passivePool.tileType);
             float balloonChance = passiveTypes.Contains(TileType.Balloon) ? 0.2f : 0f;
             float duckChance = passiveTypes.Contains(TileType.Duck) ? 0.15f : 0f;
+
+            if (isBottom)
+                duckChance = 0f;
 
             GameObject obj;
 

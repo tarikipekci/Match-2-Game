@@ -50,6 +50,10 @@ MonoBehaviour:
   column: 0
   tileType: 2
   isItObstacle: 0
+  particleEffect: {fileID: 5185790013355057979, guid: 3429af7b620795d46b4f4f79c24ddf18, type: 3}
+  ballonParticleEffect: {fileID: 4021103657954561961, guid: 5c755f9bc5253ea418e919994537dcc7, type: 3}
+  duckParticleEffect: {fileID: 2353600328335836179, guid: ceec7516237b4104b94300043ca39784, type: 3}
+  ownerGrid: {fileID: 0}
   sr: {fileID: 1475689745205798855}
   balloonSprite: {fileID: 21300000, guid: 0ea19bfe22585664590a8b8991f1da34, type: 3}
   duckSprite: {fileID: 21300000, guid: 82f27516110d324449c41cdc2f731048, type: 3}

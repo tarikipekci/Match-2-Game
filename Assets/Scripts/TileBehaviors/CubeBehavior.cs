@@ -9,7 +9,11 @@ namespace TileBehaviors
         public void Behave(GridManager grid, Tile tile)
         {
             // Cube behavior
-            SoundManager.Instance.PlaySound(SoundManager.Instance.cubeExplode);
+            if (tile.tileType == TileType.Cube)
+            {
+                tile.SetIsMatchable(true);
+                SoundManager.Instance.PlaySound(SoundManager.Instance.cubeExplode);
+            }
         }
 
         public bool CanMatch(Tile self, Tile startTile, List<Tile> connected, GridManager grid)

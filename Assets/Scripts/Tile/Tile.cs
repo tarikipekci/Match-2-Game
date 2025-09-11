@@ -17,20 +17,22 @@ public enum TileType
 [RequireComponent(typeof(SpriteRenderer))]
 public class Tile : MonoBehaviour, IPoolable
 {
-    [Header("Position on board")]
-    [HideInInspector] public int row;
+    [Header("Position on board")] [HideInInspector]
+    public int row;
+
     [HideInInspector] public int column;
 
-    [Header("Tile Settings")]
-    public TileType tileType;
+    [Header("Tile Settings")] public TileType tileType;
     public ITileBehavior behavior;
     public bool isItObstacle;
+    private bool isMatchable;
     public bool StopFurtherSearch { get; set; }
     public GameObject particleEffect;
+    [SerializeField] public GameObject ballonParticleEffect;
+    [SerializeField] public GameObject duckParticleEffect;
     [HideInInspector] public GridManager ownerGrid;
-    
-    [Header("References")]
-    public SpriteRenderer sr;
+
+    [Header("References")] public SpriteRenderer sr;
 
     [Header("Other Sprites")] public Sprite balloonSprite;
     public Sprite duckSprite;
@@ -44,6 +46,8 @@ public class Tile : MonoBehaviour, IPoolable
             sr = GetComponent<SpriteRenderer>();
         UpdateSprite();
         InitializeBehavior();
+        SetIsMatchable();
+        SetParticleEffect();
     }
 
     public virtual void UpdateSprite()
@@ -62,6 +66,7 @@ public class Tile : MonoBehaviour, IPoolable
         if (this is IActivatable activatable)
         {
             activatable.Activate(ownerGrid);
+            ownerGrid.moveManager.UseMove();
         }
         else
         {
@@ -80,16 +85,52 @@ public class Tile : MonoBehaviour, IPoolable
             _ => null
         };
     }
+
+    private void SetIsMatchable()
+    {
+        isMatchable = tileType switch
+        {
+            TileType.Balloon => true,
+            TileType.Duck => false,
+            TileType.Rocket => false,
+            TileType.Cube => true,
+            TileType.None => false,
+            _ => isMatchable
+        };
+    }
     
+    private void SetParticleEffect()
+    {
+        particleEffect = tileType switch
+        {
+            TileType.Balloon => ballonParticleEffect,
+            TileType.Duck => duckParticleEffect,
+            TileType.None => null,
+            _ => particleEffect
+        };
+    }
+
+    public bool GetIsMatchable()
+    {
+        return isMatchable;
+    }
+    
+    public void SetIsMatchable(bool newValue)
+    {
+        isMatchable = newValue;
+    }
+
     public void OnSpawn()
     {
         gameObject.SetActive(true);
         InitializeBehavior();
         ownerGrid = GameManager.Instance.currentGridManager;
+        SetIsMatchable();
+        SetParticleEffect();
     }
 
     public void OnDespawn()
     {
-         gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 }

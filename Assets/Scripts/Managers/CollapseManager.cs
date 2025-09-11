@@ -79,6 +79,7 @@ namespace Managers
                                 }
                             });
                         }
+
                         emptyRow--;
                     }
                 }
@@ -116,7 +117,9 @@ namespace Managers
                 {
                     if (grid[r, c] == null)
                     {
-                        Tile newTile = gridManager.gridGenerator.SpawnRandomTile(r, c, startX, startY);
+                        bool isBottom = (r == rows - 1); 
+
+                        Tile newTile = gridManager.gridGenerator.SpawnRandomTile(r, c, startX, startY, isBottom);
                         grid[r, c] = newTile;
 
                         Vector3 spawnPos = new Vector3(startX + c * tileSize, startY + tileSize * gridSize.y, 0);
@@ -128,13 +131,17 @@ namespace Managers
                         gridManager.PlayTileDropAnimation(newTile.transform, endPos).OnComplete(() =>
                         {
                             activeTweens--;
+                            newTile.InitializeBehavior();
+                            OnTileLanded?.Invoke(gridManager, newTile);
+
                             if (activeTweens <= 0)
+                            {
                                 GridManager.OnBoardReady?.Invoke(gridManager);
+                            }
                         });
                     }
                 }
             }
-
             if (activeTweens == 0)
                 GridManager.OnBoardReady?.Invoke(gridManager);
         }

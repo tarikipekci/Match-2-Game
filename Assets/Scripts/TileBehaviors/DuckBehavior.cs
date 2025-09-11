@@ -6,13 +6,20 @@ namespace TileBehaviors
 {
     public class DuckBehavior : ITileBehavior
     {
+        private static bool isSubscribed;
+
         public DuckBehavior()
         {
-            CollapseManager.OnTileLanded += Behave;
+            if (!isSubscribed)
+            {
+                CollapseManager.OnTileLanded += Behave;
+                isSubscribed = true;
+            }
         }
 
         public void Behave(GridManager grid, Tile tile)
         {
+            tile.SetIsMatchable(false);
             if (tile.tileType == TileType.Duck)
             {
                 int lastRow = GameManager.Instance.currentLevelData.gridSize.y - 1;
@@ -20,8 +27,11 @@ namespace TileBehaviors
                 if (tile.row == lastRow)
                 {
                     SoundManager.Instance.PlaySound(SoundManager.Instance.duckSound);
-                    PoolManager.Instance.ReturnToPool(tile.gameObject);
+                    tile.particleEffect = tile.duckParticleEffect;
+                    ParticleManager.Instance.SpawnPassiveParticles(tile, tile.transform.localPosition);
+                    grid.goalManager.CollectTile(tile, tile.transform.localPosition);
                     grid.GetGrid()[tile.row, tile.column] = null;
+                    InputManager.DisableInput();
                 }
             }
         }

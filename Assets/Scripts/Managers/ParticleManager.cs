@@ -6,7 +6,7 @@ namespace Managers
 {
     public class ParticleManager : MonoBehaviour
     {
-        private static ParticleManager Instance;
+        public static ParticleManager Instance;
 
         private void Awake()
         {
@@ -30,10 +30,17 @@ namespace Managers
 
         private void SpawnParticlesForMatchedTile(Tile tile, Vector3 position)
         {
-            if (tile is CubeTile cubeTile)
+            if (tile == null) return;
+
+            switch (tile.tileType)
             {
-                Color color = SelectTileColor.GetColor(cubeTile.tileColor);
-                SpawnCubeParticles(position, color, tile);
+                case TileType.Cube:
+                    SpawnCubeParticles(tile as CubeTile, position);
+                    break;
+                case TileType.Balloon:
+                case TileType.Duck:
+                    SpawnPassiveParticles(tile, position);
+                    break;
             }
         }
 
@@ -43,20 +50,38 @@ namespace Managers
             {
                 Tile tile = tiles[i];
                 Vector3 pos = positions[i];
+                if (tile == null) continue;
 
-                if (tile is CubeTile cubeTile)
+                switch (tile.tileType)
                 {
-                    Color color = SelectTileColor.GetColor(cubeTile.tileColor);
-                    SpawnCubeParticles(pos, color, tile);
+                    case TileType.Cube:
+                        SpawnCubeParticles(tile as CubeTile, pos);
+                        break;
+                    case TileType.Balloon:
+                    case TileType.Duck:
+                        SpawnPassiveParticles(tile, pos);
+                        break;
                 }
             }
         }
 
-        private void SpawnCubeParticles(Vector3 position, Color cubeColor, Tile tile)
+        private void SpawnCubeParticles(CubeTile cubeTile, Vector3 position)
         {
-            if (tile == null) return;
+            if (cubeTile == null || cubeTile.particleEffect == null) return;
 
-            GameObject psObj = Instantiate(tile.particleEffect, position, Quaternion.identity);
+            Color color = SelectTileColor.GetColor(cubeTile.tileColor);
+            SpawnParticles(cubeTile.particleEffect, position, color);
+        }
+
+        public void SpawnPassiveParticles(Tile tile, Vector3 position)
+        {
+            if (tile.particleEffect == null) return;
+            SpawnParticles(tile.particleEffect, position, Color.white);
+        }
+
+        private void SpawnParticles(GameObject prefab, Vector3 position, Color color)
+        {
+            GameObject psObj = Instantiate(prefab, position, Quaternion.identity);
 
             var mainPS = psObj.GetComponent<ParticleSystem>();
             if (mainPS == null) return;
@@ -73,7 +98,7 @@ namespace Managers
                 if (sub == null) continue;
 
                 var subMain = sub.main;
-                subMain.startColor = cubeColor;
+                subMain.startColor = color;
                 subMain.startDelay = 0f;
                 subMain.simulationSpace = ParticleSystemSimulationSpace.World;
             }
