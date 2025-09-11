@@ -138,8 +138,8 @@ MonoBehaviour:
   isItObstacle: 0
   particleEffect: {fileID: 9157105887711914197, guid: c4f829cb7dd4b864caf8832ec5b1ee55, type: 3}
   sr: {fileID: 3661914543515240896}
-  balloonSprite: {fileID: 0}
-  duckSprite: {fileID: 0}
+  balloonSprite: {fileID: 21300000, guid: 0ea19bfe22585664590a8b8991f1da34, type: 3}
+  duckSprite: {fileID: 21300000, guid: 82f27516110d324449c41cdc2f731048, type: 3}
   direction: 0
   leftPart: {fileID: 3100401089917499463}
   rightPart: {fileID: 4038467986908967276}

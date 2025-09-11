@@ -17,9 +17,7 @@ MonoBehaviour:
   cubeGoals:
   - color: 1
     targetCount: 40
-  - color: 3
-    targetCount: 20
-  ballonGoalCount: 0
+  ballonGoalCount: 10
   duckGoalCount: 0
   startingRows:
   - tiles:

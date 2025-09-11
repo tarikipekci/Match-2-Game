@@ -6,19 +6,28 @@ namespace TileBehaviors
 {
     public class DuckBehavior : ITileBehavior
     {
+        public DuckBehavior()
+        {
+            CollapseManager.OnTileLanded += Behave;
+        }
+
         public void Behave(GridManager grid, Tile tile)
         {
-            if (tile == null) return;
-
-            if (tile.row == GameManager.Instance.currentLevelData.gridSize.y - 1)
+            if (tile.tileType == TileType.Duck)
             {
-                // match
+                int lastRow = GameManager.Instance.currentLevelData.gridSize.y - 1;
+
+                if (tile.row == lastRow)
+                {
+                    grid.goalManager.CollectTile(tile, tile.transform.localPosition);
+                    grid.GetGrid()[tile.row, tile.column] = null;
+                }
             }
         }
 
         public bool CanMatch(Tile self, Tile startTile, List<Tile> connected, GridManager grid)
         {
-            return false;
+            return false; // duck cannot match
         }
     }
 }

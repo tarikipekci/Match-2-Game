@@ -10,7 +10,8 @@ namespace Helper
         [SerializeField] private GameObject goalParticleEffect;
         [SerializeField] private Transform uiParent;
 
-        public void AnimateToGoal(Sprite sprite, Tile boardTile, Transform goalTarget, System.Action onComplete,
+        public void AnimateToGoal(Sprite sprite, Vector3 worldStartPosition, Transform goalTarget,
+            System.Action onComplete,
             float delay = 0f)
         {
             GameObject uiTile = Instantiate(uiTilePrefab, uiParent, false);
@@ -24,11 +25,11 @@ namespace Helper
             Canvas canvas = uiParent.GetComponentInParent<Canvas>();
             Camera cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
 
-            Vector3 startScreen = Camera.main!.WorldToScreenPoint(boardTile.transform.position);
+            Vector3 startScreen = Camera.main!.WorldToScreenPoint(worldStartPosition);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, startScreen, cam,
                 out Vector2 startLocal);
             rect.anchoredPosition = startLocal;
-            rect.localScale = boardTile.transform.lossyScale;
+            rect.localScale = Vector3.one;
 
             Vector3 goalScreen = Camera.main.WorldToScreenPoint(goalTarget.position);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, goalScreen, cam, out Vector2 goalLocal);
@@ -37,9 +38,9 @@ namespace Helper
 
             Sequence seq = DOTween.Sequence();
             seq.AppendInterval(delay);
-            seq.Append(rect.DOAnchorPos(downLocal, 0.15f).SetEase(Ease.OutQuad));
-            seq.Append(rect.DOAnchorPos(goalLocal, 0.4f).SetEase(Ease.InOutQuad));
-            seq.Join(rect.DOScale(goalRect.localScale, 0.4f).SetEase(Ease.InOutQuad));
+            seq.Append(rect.DOAnchorPos(downLocal, .15f).SetEase(Ease.OutQuad));
+            seq.Append(rect.DOAnchorPos(goalLocal, .4f).SetEase(Ease.InOutQuad));
+            seq.Join(rect.DOScale(goalRect.localScale, .4f).SetEase(Ease.InOutQuad));
 
             seq.OnComplete(() =>
             {

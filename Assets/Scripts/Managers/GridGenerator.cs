@@ -59,26 +59,39 @@ namespace Managers
 
         private Tile SpawnTileFromData(TileData data, int r, int c, float startX, float startY)
         {
-            GameObject tileObj = Object.Instantiate(cubeTilePrefab, parent);
-            tileObj.transform.localScale = Vector3.one * tileSize;
-
+            GameObject tileObj;
             Tile tile;
+
             switch (data.tileType)
             {
                 case TileType.Cube:
+                    tileObj = PoolManager.Instance.SpawnFromPool(cubeTilePrefab.name, parent);
+                    if (tileObj == null)
+                        tileObj = Object.Instantiate(cubeTilePrefab, parent);
+
                     CubeTile cube = tileObj.GetComponent<CubeTile>();
                     cube.tileType = TileType.Cube;
                     cube.tileColor = data.tileColor;
                     cube.UpdateSprite();
                     tile = cube;
                     break;
+
                 case TileType.Balloon:
                 case TileType.Duck:
+                    tileObj = PoolManager.Instance.SpawnFromPool(passiveTilePrefab.name, parent);
+                    if (tileObj == null)
+                        tileObj = Object.Instantiate(passiveTilePrefab, parent);
+
                     tile = tileObj.GetComponent<Tile>();
                     tile.tileType = data.tileType;
                     tile.UpdateSprite();
                     break;
+
                 default:
+                    tileObj = PoolManager.Instance.SpawnFromPool(passiveTilePrefab.name, parent);
+                    if (tileObj == null)
+                        tileObj = Object.Instantiate(passiveTilePrefab, parent);
+
                     tile = tileObj.GetComponent<Tile>();
                     tile.tileType = TileType.None;
                     break;
@@ -87,6 +100,9 @@ namespace Managers
             tile.row = r;
             tile.column = c;
             tileObj.transform.localPosition = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
+            tileObj.transform.localScale = Vector3.one * tileSize;
+
+            tile.OnSpawn();
 
             return tile;
         }
@@ -100,24 +116,27 @@ namespace Managers
             float balloonChance = passiveTypes.Contains(TileType.Balloon) ? 0.2f : 0f;
             float duckChance = passiveTypes.Contains(TileType.Duck) ? 0.15f : 0f;
 
+            GameObject obj;
+
             if (random < balloonChance && passiveTypes.Contains(TileType.Balloon))
             {
-                GameObject obj = Object.Instantiate(passiveTilePrefab, parent);
-                obj.transform.localScale = Vector3.one * tileSize;
+                obj = PoolManager.Instance.SpawnFromPool(passiveTilePrefab.name, parent);
+                if (obj == null) obj = Object.Instantiate(passiveTilePrefab, parent);
                 tile = obj.GetComponent<Tile>();
                 tile.tileType = TileType.Balloon;
             }
             else if (random < balloonChance + duckChance && passiveTypes.Contains(TileType.Duck))
             {
-                GameObject obj = Object.Instantiate(passiveTilePrefab, parent);
-                obj.transform.localScale = Vector3.one * tileSize;
+                obj = PoolManager.Instance.SpawnFromPool(passiveTilePrefab.name, parent);
+                if (obj == null) obj = Object.Instantiate(passiveTilePrefab, parent);
                 tile = obj.GetComponent<Tile>();
                 tile.tileType = TileType.Duck;
             }
             else
             {
-                GameObject obj = Object.Instantiate(cubeTilePrefab, parent);
-                obj.transform.localScale = Vector3.one * tileSize;
+                obj = PoolManager.Instance.SpawnFromPool(cubeTilePrefab.name, parent);
+                if (obj == null) obj = Object.Instantiate(cubeTilePrefab, parent);
+
                 CubeTile cube = obj.GetComponent<CubeTile>();
                 cube.tileType = TileType.Cube;
 
@@ -127,11 +146,12 @@ namespace Managers
                 tile = cube;
             }
 
+            obj.transform.localScale = Vector3.one * tileSize;
             tile.row = r;
             tile.column = c;
             tile.transform.localPosition = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-
             tile.UpdateSprite();
+
             return tile;
         }
     }

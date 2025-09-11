@@ -15,7 +15,7 @@ public enum TileType
 }
 
 [RequireComponent(typeof(SpriteRenderer))]
-public class Tile : MonoBehaviour
+public class Tile : MonoBehaviour, IPoolable
 {
     [Header("Position on board")]
     [HideInInspector] public int row;
@@ -31,12 +31,11 @@ public class Tile : MonoBehaviour
     [Header("References")]
     public SpriteRenderer sr;
 
-    [Header("Other Sprites")]
-    public Sprite balloonSprite;
+    [Header("Other Sprites")] public Sprite balloonSprite;
     public Sprite duckSprite;
-    
-    public static Action<List<Tile>> OnTilesMatched;
-    public static Action <Tile> OnTileMatched;
+
+    public static Action<List<Tile>, List<Vector3>> OnTilesMatched;
+    public static Action<Tile, Vector3> OnTileMatched;
 
     private void Awake()
     {
@@ -71,7 +70,7 @@ public class Tile : MonoBehaviour
         }
     }
 
-    private void InitializeBehavior()
+    public void InitializeBehavior()
     {
         behavior = tileType switch
         {
@@ -86,5 +85,16 @@ public class Tile : MonoBehaviour
     public void ExecuteBehavior(GridManager grid)
     {
         behavior?.Behave(grid, this);
+    }
+
+    public void OnSpawn()
+    {
+        gameObject.SetActive(true);
+        InitializeBehavior();
+    }
+
+    public void OnDespawn()
+    {
+         gameObject.SetActive(false);
     }
 }

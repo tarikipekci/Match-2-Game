@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Data;
 using DG.Tweening;
 using UnityEngine;
@@ -17,12 +20,16 @@ namespace Managers
         private int activeTilesCount;
         public GridGenerator gridGenerator;
         private CollapseManager collapseManager;
+        
+        public static Action<GridManager> OnBoardReady;
+
 
         private Tile[,] grid;
         private bool[,] visited;
 
         void Start()
         {
+            InputManager.DisableInput();
             levelData = GameManager.Instance.currentLevelData;
             GenerateGrid();
             collapseManager = new CollapseManager(grid, levelData.gridSize, this, goalManager, tileSize);
@@ -33,6 +40,7 @@ namespace Managers
             CalculateTileSize();
             gridGenerator = new GridGenerator(levelData, cubeTilePrefab, passiveTilePrefab, tileSize, transform);
             grid = gridGenerator.GenerateGrid();
+            OnBoardReady(this);
         }
 
         private void CalculateTileSize()
@@ -45,6 +53,8 @@ namespace Managers
 
         public void TryMatch(Tile startTile)
         {
+            if (!InputManager.CanPlay) return;
+            
             MatchFinder matchFinder = new MatchFinder(grid, levelData.gridSize, this);
             var connected = matchFinder.FindMatches(startTile, out var cubeCount);
 
@@ -63,10 +73,11 @@ namespace Managers
 
             if (cubeCount >= 5)
             {
-                SpawnRocket(((CubeTile)startTile).row, ((CubeTile)startTile).column, startTile.transform.localPosition);
+                SpawnRocket(((CubeTile)startTile).row, ((CubeTile)startTile).column, startTile.transform.position);
             }
 
-            OnTilesMatched?.Invoke(connected);
+            List<Vector3> positions = connected.Select(t => t.transform.position).ToList();
+            OnTilesMatched?.Invoke(connected, positions);
             collapseManager.CollapseAndRefill();
         }
 

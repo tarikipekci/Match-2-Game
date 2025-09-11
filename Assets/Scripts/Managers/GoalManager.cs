@@ -45,7 +45,6 @@ namespace Managers
 
             int uiCount = 0;
 
-            // --- Cube Goals ---
             if (levelData.cubeGoals is { Length: > 0 })
             {
                 int cubeGoalCount = Mathf.Min(2, levelData.cubeGoals.Length);
@@ -69,7 +68,6 @@ namespace Managers
                 }
             }
 
-            // --- Balloon Goal ---
             if (uiCount < 2 && levelData.ballonGoalCount > 0)
             {
                 GameObject go = Instantiate(goalPrefab, goalContainer);
@@ -82,7 +80,6 @@ namespace Managers
                 }
             }
 
-            // --- Duck Goal ---
             if (uiCount < 2 && levelData.duckGoalCount > 0)
             {
                 GameObject go = Instantiate(goalPrefab, goalContainer);
@@ -96,7 +93,7 @@ namespace Managers
             }
         }
 
-        private void CollectTiles(List<Tile> tiles)
+        private void CollectTiles(List<Tile> tiles, List<Vector3> positions)
         {
             for (int i = 0; i < tiles.Count; i++)
             {
@@ -126,12 +123,12 @@ namespace Managers
                     {
                         if (ui.GetCurrentCount() <= 0)
                         {
-                            Destroy(tile.gameObject);
+                            PoolManager.Instance.ReturnToPool(tile.gameObject);
                             break;
                         }
 
                         ui.ReduceCount(1);
-                        Destroy(tile.gameObject);
+                        PoolManager.Instance.ReturnToPool(tile.gameObject);
 
                         float delay = i * 0.05f;
 
@@ -142,7 +139,7 @@ namespace Managers
 
                         tileGoalAnimator.AnimateToGoal(
                             tile.sr.sprite,
-                            tile,
+                            positions[i], 
                             ui.tileImage.transform,
                             () =>
                             {
@@ -155,16 +152,16 @@ namespace Managers
                         break;
                     }
 
-                    Destroy(tile.gameObject);
+                    PoolManager.Instance.ReturnToPool(tile.gameObject);
                 }
             }
         }
 
-        public void CollectTile(Tile tile)
+        public void CollectTile(Tile tile, Vector3 position)
         {
             if (tile == null) return;
 
-            CollectTiles(new List<Tile> { tile });
+            CollectTiles(new List<Tile> { tile }, new List<Vector3> { position });
         }
     }
 }

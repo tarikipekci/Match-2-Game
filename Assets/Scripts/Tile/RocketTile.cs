@@ -101,7 +101,7 @@ public class RocketTile : Tile, IActivatable
         else
         {
             tile.particleEffect = particleEffect;
-            OnTileMatched?.Invoke(tile);
+            OnTileMatched?.Invoke(tile, tile.transform.position); 
             board.GetGrid()[tile.row, tile.column] = null;
         }
     }

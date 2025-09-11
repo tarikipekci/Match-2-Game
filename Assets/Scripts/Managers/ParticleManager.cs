@@ -8,8 +8,6 @@ namespace Managers
     {
         private static ParticleManager Instance;
 
-        [Header("Particle Prefab")] public GameObject cubeParticlePrefab;
-
         private void Awake()
         {
             if (Instance == null)
@@ -30,23 +28,26 @@ namespace Managers
             Tile.OnTileMatched -= SpawnParticlesForMatchedTile;
         }
 
-        private void SpawnParticlesForMatchedTile(Tile tile)
+        private void SpawnParticlesForMatchedTile(Tile tile, Vector3 position)
         {
             if (tile is CubeTile cubeTile)
             {
                 Color color = SelectTileColor.GetColor(cubeTile.tileColor);
-                Instance.SpawnCubeParticles(cubeTile.transform.position, color, tile);
+                SpawnCubeParticles(position, color, tile);
             }
         }
 
-        private void SpawnParticlesForMatchedTiles(List<Tile> tiles)
+        private void SpawnParticlesForMatchedTiles(List<Tile> tiles, List<Vector3> positions)
         {
-            foreach (var tile in tiles)
+            for (int i = 0; i < tiles.Count; i++)
             {
+                Tile tile = tiles[i];
+                Vector3 pos = positions[i];
+
                 if (tile is CubeTile cubeTile)
                 {
                     Color color = SelectTileColor.GetColor(cubeTile.tileColor);
-                    Instance.SpawnCubeParticles(cubeTile.transform.position, color, tile);
+                    SpawnCubeParticles(pos, color, tile);
                 }
             }
         }

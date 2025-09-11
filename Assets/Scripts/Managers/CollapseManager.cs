@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using DG.Tweening;
 using UnityEngine;
 
@@ -12,7 +12,10 @@ namespace Managers
         private GoalManager goalManager;
         private float tileSize;
 
-        public CollapseManager(Tile[,] grid, Vector2Int gridSize, GridManager gridManager, GoalManager goalManager, float tileSize)
+        public static Action<GridManager, Tile> OnTileLanded;
+
+        public CollapseManager(Tile[,] grid, Vector2Int gridSize, GridManager gridManager, GoalManager goalManager,
+            float tileSize)
         {
             this.grid = grid;
             this.gridSize = gridSize;
@@ -28,12 +31,12 @@ namespace Managers
 
         private void CollapseColumns()
         {
+            InputManager.DisableInput();
             int rows = gridSize.y;
             int columns = gridSize.x;
             float startX = -columns * tileSize / 2 + tileSize / 2;
             float startY = rows * tileSize / 2 - tileSize / 2;
 
-            List<Tile> ducksToRemove = new List<Tile>();
             int activeTweens = 0;
 
             for (int c = 0; c < columns; c++)
@@ -58,22 +61,21 @@ namespace Managers
                             gridManager.PlayTileDropAnimation(tile.transform, endPos).OnComplete(() =>
                             {
                                 activeTweens--;
-
-                                if (tile.tileType == TileType.Duck && tile.row == rows - 1)
-                                    ducksToRemove.Add(tile);
-
+                                tile.InitializeBehavior();
+                                OnTileLanded?.Invoke(gridManager, tile);
                                 if (activeTweens == 0)
                                 {
-                                    foreach (var duck in ducksToRemove)
-                                    {
-                                        goalManager.CollectTile(duck);
-                                        grid[duck.row, duck.column] = null;
-                                    }
-
                                     if (CheckForEmptySpaces())
+                                    {
                                         CollapseAndRefill();
+                                    }
                                     else
+                                    {
                                         RefillGrid();
+
+                                        if (!CheckForEmptySpaces())
+                                            GridManager.OnBoardReady?.Invoke(gridManager);
+                                    }
                                 }
                             });
                         }
@@ -83,15 +85,19 @@ namespace Managers
             }
 
             if (activeTweens == 0)
+            {
                 RefillGrid();
+                if (!CheckForEmptySpaces())
+                    GridManager.OnBoardReady?.Invoke(gridManager);
+            }
         }
 
         private bool CheckForEmptySpaces()
         {
             for (int r = 0; r < gridSize.y; r++)
-                for (int c = 0; c < gridSize.x; c++)
-                    if (grid[r, c] == null)
-                        return true;
+            for (int c = 0; c < gridSize.x; c++)
+                if (grid[r, c] == null)
+                    return true;
             return false;
         }
 
@@ -101,6 +107,8 @@ namespace Managers
             int columns = gridSize.x;
             float startX = -columns * tileSize / 2 + tileSize / 2;
             float startY = rows * tileSize / 2 - tileSize / 2;
+
+            int activeTweens = 0;
 
             for (int c = 0; c < columns; c++)
             {
@@ -115,10 +123,20 @@ namespace Managers
                         newTile.transform.localPosition = spawnPos;
 
                         Vector3 endPos = new Vector3(startX + c * tileSize, startY - r * tileSize, 0);
-                        gridManager.PlayTileDropAnimation(newTile.transform, endPos);
+                        activeTweens++;
+
+                        gridManager.PlayTileDropAnimation(newTile.transform, endPos).OnComplete(() =>
+                        {
+                            activeTweens--;
+                            if (activeTweens <= 0)
+                                GridManager.OnBoardReady?.Invoke(gridManager);
+                        });
                     }
                 }
             }
+
+            if (activeTweens == 0)
+                GridManager.OnBoardReady?.Invoke(gridManager);
         }
     }
 }
